@@ -781,7 +781,9 @@
                     }
                 }
             });
+            totalProfit -= discount;
             document.getElementById('dispProfit').textContent = totalProfit.toFixed(2) + ' Tk';
+            document.getElementById('dispProfit').style.color = totalProfit >= 0 ? 'green' : 'red';
         }
 
         function generatePrintPages() {
