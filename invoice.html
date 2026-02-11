@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Short Circuit - Invoice Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary: #1a1a2e;
+            --accent: #e94560;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+            --text: #212529;
+            --muted: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        /* === FORM STYLES === */
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto 40px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary);
+        }
+
+        .form-title h2 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .form-title p {
+            color: var(--muted);
+            font-size: 0.9em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--primary);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .id-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .id-row input {
+            flex: 1;
+        }
+
+        .items-box {
+            background: var(--light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 80px 120px 40px;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #ff6b6b);
+            color: white;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 14px;
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-add {
+            background: transparent;
+            border: 2px dashed var(--accent);
+            color: var(--accent);
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-add:hover {
+            background: rgba(233, 69, 96, 0.05);
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .options-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* === INVOICE PREVIEW (SCREEN) === */
+        #invoice-preview-screen {
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        /* Common invoice styles (used in both screen and print) */
+        .invoice-header {
+            background: var(--primary);
+            color: white;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand img {
+            height: 70px;
+            border-radius: 8px;
+        }
+
+        .brand-info h1 {
+            font-size: 1.6em;
+            margin-bottom: 2px;
+        }
+
+        .brand-info .tagline {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .brand-info .social {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 0.85em;
+            opacity: 0.9;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand-info .social svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+
+        .invoice-title {
+            text-align: right;
+        }
+
+        .invoice-title h2 {
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .invoice-title .inv-num {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .meta-section {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px 20px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .meta-block h4 {
+            color: var(--muted);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .meta-block p {
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .items-section {
+            padding: 20px 40px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table th {
+            background: var(--light);
+            padding: 14px 12px;
+            text-align: left;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .items-table th.right {
+            text-align: right;
+        }
+
+        .items-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.95em;
+        }
+
+        .items-table td.right {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .items-table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .summary-section {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 40px 20px;
+        }
+
+        .summary-box {
+            width: 280px;
+            background: var(--light);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .summary-row.discount {
+            color: #28a745;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--primary);
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .invoice-footer {
+            background: var(--light);
+            padding: 25px 40px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Sticky footer positioning handled in print media query */
+
+        .footer-note {
+            font-style: italic;
+            color: var(--muted);
+            margin-bottom: 5px;
+            font-size: 0.85em;
+        }
+
+        .footer-thanks {
+            color: var(--text);
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .footer-contact {
+            color: var(--muted);
+            font-size: 0.85em;
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        /* === PRINT STYLES === */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .form-container,
+            #invoice-preview-screen,
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .print-page {
+                width: 210mm;
+                height: 297mm;
+                /* Fixed A4 Height */
+                position: relative;
+                margin: 0;
+                padding: 0;
+                page-break-after: always;
+                box-sizing: border-box;
+                overflow: hidden;
+                /* Strict strict strict */
+            }
+
+            .print-page:last-child {
+                page-break-after: auto;
+            }
+
+            .invoice-header {
+                padding: 20px 40px;
+            }
+
+            .meta-section {
+                padding: 10px 40px;
+            }
+
+            .items-section {
+                padding: 10px 40px;
+            }
+
+            /* Sticky Footer for Print Page */
+            .invoice-footer {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 20px 40px 30px 40px;
+                border-top: 1px solid var(--border);
+                background: white;
+                /* Ensure it covers content behind if any */
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* === CUSTOM SUGGESTION DROPDOWN === */
+        .suggestion-wrapper {
+            position: relative;
+        }
+
+        .suggestion-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .suggestion-list.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .suggestion-item .cat {
+            font-size: 11px;
+            color: var(--muted);
+            float: right;
+        }
+
+        /* === MOBILE ONLY === */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .form-container {
+                padding: 15px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+            }
+
+            #auth-controls {
+                position: static !important;
+                display: flex;
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+
+            #auth-controls button {
+                flex: 1;
+                font-size: 12px !important;
+                padding: 10px 8px !important;
+            }
+
+            .form-title h2 {
+                font-size: 1.3em;
+            }
+
+            .form-title p {
+                font-size: 0.8em;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .id-row {
+                flex-direction: column;
+            }
+
+            .item-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding: 12px;
+                background: white;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                margin-bottom: 12px;
+            }
+
+            .item-row .item-desc {
+                font-size: 16px;
+                /* Prevent iOS zoom */
+            }
+
+            .item-row .item-qty,
+            .item-row .item-price {
+                font-size: 16px;
+            }
+
+            .item-row .btn-remove {
+                justify-self: end;
+                width: 40px;
+                height: 40px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .items-box {
+                padding: 12px;
+            }
+
+            .options-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .btn-primary {
+                padding: 14px;
+                font-size: 15px;
+            }
+
+            /* Invoice Preview - Compact on mobile */
+            #invoice-preview-screen {
+                min-height: auto;
+                margin-top: 20px;
+            }
+
+            .invoice-header {
+                flex-direction: column;
+                padding: 15px;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .brand {
+                justify-content: center;
+            }
+
+            .brand img {
+                height: 50px;
+            }
+
+            .brand-info h1 {
+                font-size: 1.2em;
+            }
+
+            .brand-info .tagline {
+                font-size: 0.8em;
+            }
+
+            .brand-info .social {
+                justify-content: center;
+                font-size: 0.75em;
+            }
+
+            .invoice-title {
+                text-align: center;
+            }
+
+            .invoice-title h2 {
+                font-size: 1.5em;
+            }
+
+            .meta-section {
+                flex-direction: column;
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .meta-section .meta-block:last-child {
+                text-align: left !important;
+            }
+
+            .items-section {
+                padding: 10px;
+            }
+
+            .items-table th,
+            .items-table td {
+                padding: 8px 6px;
+                font-size: 0.8em;
+            }
+
+            .summary-section {
+                padding: 10px;
+            }
+
+            .summary-box {
+                width: 100%;
+            }
+
+            .invoice-footer {
+                padding: 15px;
+            }
+
+            .footer-note,
+            .footer-contact {
+                font-size: 0.75em;
+            }
+
+            .footer-thanks {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PRINT AREA (Generated by JS) -->
+    <div id="print-area" class="print-only"></div>
+
+    <!-- INPUT FORM -->
+    <div class="form-container no-print" style="position: relative;">
+        <div id="auth-controls" style="position: absolute; top: 15px; right: 15px; z-index: 10;">
+            <button onclick="window.location.href='manager.html'"
+                style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">Manager
+                Dashboard</button>
+            <button onclick="window.location.href='orders.html'"
+                style="padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">📦
+                Orders</button>
+            <button onclick="Auth.logout()"
+                style="padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Logout</button>
+        </div>
+        <div class="form-title">
+            <h2>📝 Create Invoice</h2>
+            <p>Fill in the details below — invoice updates in real-time</p>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Invoice Date</label>
+                <input type="date" id="invDate">
+            </div>
+            <div class="form-group">
+                <label>Invoice Number</label>
+                <div class="id-row">
+                    <input type="text" id="invId" placeholder="INV-1001">
+                    <button class="btn btn-sm" onclick="incrementId()">Next →</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Customer Name</label>
+                <input type="text" id="custName" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="custPhone" placeholder="01700-000000">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Customer Address</label>
+            <textarea id="custAddress" placeholder="123 Main Street, Dhaka"></textarea>
+        </div>
+
+        <div class="items-box">
+            <label>Items (Max 20 per page automatically)</label>
+            <div id="itemsContainer">
+                <div class="item-row">
+                    <div class="suggestion-wrapper">
+                        <input type="text" class="item-desc" placeholder="Item description" list="price-list-options"
+                            oninput="handleItemInput(this)" onfocus="showSuggestions(this)" autocomplete="off">
+                        <div class="suggestion-list"></div>
+                    </div>
+                    <input type="number" class="item-qty" placeholder="Qty" value="1" min="1">
+                    <input type="number" class="item-price" placeholder="Price" min="0">
+                    <button class="btn btn-remove" onclick="removeItem(this)">×</button>
+                </div>
+            </div>
+            <button class="btn btn-add" onclick="addItem()">+ Add Item</button>
+        </div>
+
+        <div class="options-row">
+            <div class="form-group">
+                <label>Discount (Tk)</label>
+                <input type="number" id="discount" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Delivery Location</label>
+                <select id="delivery">
+                    <option value="0">Inside IUT (Free)</option>
+                    <option value="120">Outside IUT (120 Tk)</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print Invoice</button>
+    </div>
+
+    <!-- INVOICE PREVIEW (SCREEN ONLY) -->
+    <div id="invoice-preview-screen">
+        <div class="invoice-header">
+            <div class="brand">
+                <img src="Short Circuit .PNG" alt="Logo">
+                <div class="brand-info">
+                    <h1>SHORT CIRCUIT</h1>
+                    <div class="tagline">Electronics Shop</div>
+                    <a href="https://www.facebook.com/ShortCircuitIUT" class="social" target="_blank">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        ShortCircuitIUT
+                    </a>
+                </div>
+            </div>
+            <div class="invoice-title">
+                <h2>INVOICE</h2>
+                <div class="inv-num">#<span id="dispId">INV-1001</span></div>
+            </div>
+        </div>
+
+        <div class="meta-section">
+            <div class="meta-block">
+                <h4>Bill To</h4>
+                <p><strong id="dispName">Customer Name</strong></p>
+                <p id="dispPhone">Phone Number</p>
+                <p id="dispAddress">Address</p>
+            </div>
+            <div class="meta-block" style="text-align:right;">
+                <h4>Invoice Date</h4>
+                <p id="dispDate">--</p>
+            </div>
+        </div>
+
+        <div class="items-section">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th class="right">Qty</th>
+                        <th class="right">Unit Price</th>
+                        <th class="right">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+            </table>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="dispSubtotal">0 Tk</span>
+                </div>
+                <div class="summary-row discount" id="discountRow" style="display:none;">
+                    <span>Discount</span>
+                    <span id="dispDiscount">-0 Tk</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery</span>
+                    <span id="dispDelivery">0 Tk</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="dispTotal">0 Tk</span>
+                </div>
+                <div class="summary-row no-print"
+                    style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 5px; color: green;">
+                    <span>Net Profit</span>
+                    <span id="dispProfit">0 Tk</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-footer">
+            <p class="footer-note">This is a system generated invoice, no signature required.</p>
+            <p class="footer-thanks">Thank you for shopping with Short Circuit!</p>
+            <p class="footer-contact">For queries, contact us on our Facebook page.</p>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
+            const savedId = localStorage.getItem('sc_invoice_num') || '1001';
+            document.getElementById('invId').value = 'INV-' + savedId;
+            attachListeners();
+            populatePriceList();
+            updatePreview();
+        });
+
+        async function populatePriceList() {
+            const datalist = document.getElementById('price-list-options') || document.createElement('datalist');
+            if (!datalist.id) {
+                datalist.id = 'price-list-options';
+                document.body.appendChild(datalist);
+            }
+            datalist.innerHTML = ''; // Clear existing options
+
+            // Fetch from Supabase
+            if (typeof DB !== 'undefined') {
+                window.PRICE_LIST = await DB.fetchProducts(); // Store globally for handleItemInput
+
+                if (window.PRICE_LIST && window.PRICE_LIST.length > 0) {
+                    window.PRICE_LIST.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.name;
+                        datalist.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        function handleItemInput(input) {
+            const val = input.value;
+            // Auto-fill price if exact match
+            if (typeof window.PRICE_LIST !== 'undefined') {
+                const item = window.PRICE_LIST.find(p => p.name === val);
+                if (item) {
+                    const row = input.closest('.item-row');
+                    const priceInput = row.querySelector('.item-price');
+                    priceInput.value = item.price;
+                    updatePreview();
+                }
+            }
+            // Show custom suggestions
+            showSuggestions(input);
+        }
+
+        function showSuggestions(input) {
+            const wrapper = input.closest('.suggestion-wrapper');
+            if (!wrapper) return;
+            const list = wrapper.querySelector('.suggestion-list');
+            if (!list || !window.PRICE_LIST) return;
+
+            const val = input.value.toLowerCase().trim();
+            if (val.length === 0) {
+                list.classList.remove('active');
+                return;
+            }
+
+            const matches = window.PRICE_LIST.filter(p =>
+                p.name.toLowerCase().includes(val)
+            ).slice(0, 15);
+
+            if (matches.length === 0 || (matches.length === 1 && matches[0].name === input.value)) {
+                list.classList.remove('active');
+                return;
+            }
+
+            list.innerHTML = matches.map(m =>
+                `<div class="suggestion-item" data-name="${m.name}" data-price="${m.price}">
+                    ${m.name} <span class="cat">${m.category || ''}</span>
+                </div>`
+            ).join('');
+
+            list.querySelectorAll('.suggestion-item').forEach(item => {
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    input.value = item.dataset.name;
+                    const row = input.closest('.item-row');
+                    row.querySelector('.item-price').value = item.dataset.price;
+                    list.classList.remove('active');
+                    updatePreview();
+                });
+                item.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    input.value = item.dataset.name;
+                    const row = input.closest('.item-row');
+                    row.querySelector('.item-price').value = item.dataset.price;
+                    list.classList.remove('active');
+                    updatePreview();
+                });
+            });
+
+            list.classList.add('active');
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.suggestion-wrapper')) {
+                document.querySelectorAll('.suggestion-list').forEach(l => l.classList.remove('active'));
+            }
+        });
+
+        function attachListeners() {
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.addEventListener('input', updatePreview);
+            });
+        }
+
+        function addItem() {
+            const container = document.getElementById('itemsContainer');
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div class="suggestion-wrapper">
+                    <input type="text" class="item-desc" placeholder="Item description" list="price-list-options" oninput="handleItemInput(this)" onfocus="showSuggestions(this)" autocomplete="off">
+                    <div class="suggestion-list"></div>
+                </div>
+                <input type="number" class="item-qty" placeholder="Qty" value="1" min="1">
+                <input type="number" class="item-price" placeholder="Price" min="0">
+                <button class="btn btn-remove" onclick="removeItem(this)">×</button>
+            `;
+            container.appendChild(row);
+            attachListeners();
+        }
+
+        function removeItem(btn) {
+            if (document.querySelectorAll('.item-row').length > 1) {
+                btn.parentElement.remove();
+                updatePreview();
+            }
+        }
+
+        function incrementId() {
+            const input = document.getElementById('invId');
+            const match = input.value.match(/(\d+)$/);
+            if (match) {
+                const num = parseInt(match[0]) + 1;
+                input.value = input.value.substring(0, match.index) + num;
+                updatePreview();
+            }
+        }
+
+        function saveInvoiceNumber() {
+            const match = document.getElementById('invId').value.match(/(\d+)$/);
+            if (match) {
+                localStorage.setItem('sc_invoice_num', (parseInt(match[0]) + 1).toString());
+            }
+        }
+
+        function updatePreview() {
+            // Update Screen Preview
+            const dateVal = document.getElementById('invDate').value;
+            if (dateVal) {
+                document.getElementById('dispDate').textContent = new Date(dateVal).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+            }
+
+            document.getElementById('dispId').textContent = document.getElementById('invId').value;
+            document.getElementById('dispName').textContent = document.getElementById('custName').value || 'Customer Name';
+            document.getElementById('dispPhone').textContent = document.getElementById('custPhone').value || 'Phone Number';
+            document.getElementById('dispAddress').textContent = document.getElementById('custAddress').value || 'Address';
+
+            const tbody = document.getElementById('itemsBody');
+            tbody.innerHTML = '';
+            let subtotal = 0;
+
+            document.querySelectorAll('.item-row').forEach(row => {
+                const desc = row.querySelector('.item-desc').value;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+
+                if (desc || price > 0) {
+                    const total = qty * price;
+                    subtotal += total;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${desc || '-'}</td>
+                        <td class="right">${qty}</td>
+                        <td class="right">${price.toFixed(2)} Tk</td>
+                        <td class="right">${total.toFixed(2)} Tk</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const delivery = parseFloat(document.getElementById('delivery').value) || 0;
+            const grandTotal = subtotal - discount + delivery;
+
+            document.getElementById('dispSubtotal').textContent = subtotal.toFixed(2) + ' Tk';
+
+            const discRow = document.getElementById('discountRow');
+            if (discount > 0) {
+                discRow.style.display = 'flex';
+                document.getElementById('dispDiscount').textContent = '-' + discount.toFixed(2) + ' Tk';
+            } else {
+                discRow.style.display = 'none';
+            }
+
+            document.getElementById('dispDelivery').textContent = delivery.toFixed(2) + ' Tk';
+            document.getElementById('dispTotal').textContent = grandTotal.toFixed(2) + ' Tk';
+
+            // Calculate Profit
+            let totalProfit = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const desc = row.querySelector('.item-desc').value;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+
+                if (desc && window.PRICE_LIST) {
+                    const item = window.PRICE_LIST.find(p => p.name === desc);
+                    if (item) {
+                        const buyingPrice = parseFloat(item.buying_price) || 0;
+                        if (buyingPrice > 0) {
+                            totalProfit += (price - buyingPrice) * qty;
+                        }
+                    }
+                }
+            });
+            totalProfit -= discount;
+            document.getElementById('dispProfit').textContent = totalProfit.toFixed(2) + ' Tk';
+            document.getElementById('dispProfit').style.color = totalProfit >= 0 ? 'green' : 'red';
+        }
+
+        function generatePrintPages() {
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = '';
+
+            const items = [];
+            document.querySelectorAll('.item-row').forEach(row => {
+                const desc = row.querySelector('.item-desc').value;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                if (desc || price > 0) {
+                    items.push({ desc, qty, price, total: qty * price });
+                }
+            });
+
+            const ITEMS_PER_PAGE = 20;
+            const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE) || 1;
+
+            for (let i = 0; i < totalPages; i++) {
+                const isLastPage = (i === totalPages - 1);
+                const pageItems = items.slice(i * ITEMS_PER_PAGE, (i + 1) * ITEMS_PER_PAGE);
+
+                const page = document.createElement('div');
+                page.className = 'print-page';
+
+                // Header
+                const headerHtml = `
+                    <div class="invoice-header">
+                        <div class="brand">
+                            <img src="Short Circuit .PNG" alt="Logo">
+                            <div class="brand-info">
+                                <h1>SHORT CIRCUIT</h1>
+                                <div class="tagline">Electronics Shop</div>
+                                <a href="https://www.facebook.com/ShortCircuitIUT" class="social">
+                                    <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                    ShortCircuitIUT
+                                </a>
+                            </div>
+                        </div>
+                        <div class="invoice-title">
+                            <h2>INVOICE</h2>
+                            <div class="inv-num">#${document.getElementById('invId').value}</div>
+                        </div>
+                    </div>
+                `;
+
+                // Meta Info (Show on all pages for context)
+                const metaHtml = `
+                    <div class="meta-section">
+                        <div class="meta-block">
+                            <h4>Bill To</h4>
+                            <p><strong>${document.getElementById('custName').value}</strong></p>
+                            <p>${document.getElementById('custPhone').value}</p>
+                            <p>${document.getElementById('custAddress').value}</p>
+                        </div>
+                        <div class="meta-block" style="text-align:right;">
+                            <h4>Date</h4>
+                            <p>${document.getElementById('dispDate').textContent}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Items Table
+                let itemsHtml = `
+                    <div class="items-section">
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="right">Qty</th>
+                                    <th class="right">Unit Price</th>
+                                    <th class="right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                pageItems.forEach(item => {
+                    itemsHtml += `
+                        <tr>
+                            <td>${item.desc || '-'}</td>
+                            <td class="right">${item.qty}</td>
+                            <td class="right">${item.price.toFixed(2)} Tk</td>
+                            <td class="right">${item.total.toFixed(2)} Tk</td>
+                        </tr>
+                    `;
+                });
+                itemsHtml += `</tbody></table></div>`;
+
+                // Summary (Last Page Only)
+                let summaryHtml = '';
+                if (isLastPage) {
+                    const subtotal = document.getElementById('dispSubtotal').textContent;
+                    const discount = document.getElementById('dispDiscount').textContent;
+                    const delivery = document.getElementById('dispDelivery').textContent;
+                    const total = document.getElementById('dispTotal').textContent;
+                    const discountVal = parseFloat(document.getElementById('discount').value) || 0;
+                    const discDisplay = discountVal > 0 ? 'flex' : 'none';
+
+                    summaryHtml = `
+                        <div class="summary-section">
+                            <div class="summary-box">
+                                <div class="summary-row"><span>Subtotal</span><span>${subtotal}</span></div>
+                                <div class="summary-row discount" style="display:${discDisplay}"><span>Discount</span><span>${discount}</span></div>
+                                <div class="summary-row"><span>Delivery</span><span>${delivery}</span></div>
+                                <div class="summary-row total"><span>Total</span><span>${total}</span></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Footer
+                const footerHtml = `
+                    <div class="invoice-footer">
+                        <p class="footer-note">This is a system generated invoice, no signature required.</p>
+                        <p class="footer-thanks">Thank you for shopping with Short Circuit!</p>
+                        <p class="footer-contact">For queries, contact us on our Facebook page.</p>
+                        <p style="margin-top:5px;font-weight:600;font-size:0.8em;color:#1a1a2e">Page ${i + 1} of ${totalPages}</p>
+                    </div>
+                `;
+
+                page.innerHTML = headerHtml + metaHtml + itemsHtml + summaryHtml + footerHtml;
+                printArea.appendChild(page);
+            }
+        }
+
+        function printInvoice() {
+            saveInvoiceNumber();
+            generatePrintPages();
+            window.print();
+        }
+    </script>
+</body>
+
+</html>

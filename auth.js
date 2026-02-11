@@ -15,7 +15,7 @@ const Auth = {
 
         // If session and we ARE on the login page, redirect to index
         if (session && window.location.href.includes('login.html')) {
-            window.location.href = 'index.html';
+            window.location.href = 'invoice.html';
         }
 
         return session;

@@ -4,17 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Short Circuit - Invoice Generator</title>
+    <title>Short Circuit — Electronics Shop</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
             --primary: #1a1a2e;
             --accent: #e94560;
-            --light: #f8f9fa;
-            --border: #dee2e6;
-            --text: #212529;
-            --muted: #6c757d;
+            --accent-light: #ff6b6b;
+            --surface: #ffffff;
+            --bg: #f0f2f5;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --success: #059669;
+            --radius: 12px;
         }
 
         * {
@@ -25,1178 +29,1088 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: var(--bg);
             color: var(--text);
+            min-height: 100vh;
         }
 
-        /* === FORM STYLES === */
-        .form-container {
-            max-width: 700px;
-            margin: 0 auto 40px;
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        /* === HEADER === */
+        .shop-header {
+            background: var(--primary);
+            color: white;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .form-title {
-            text-align: center;
-            margin-bottom: 25px;
-            color: var(--primary);
+        .shop-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .form-title h2 {
-            font-size: 1.8em;
-            margin-bottom: 5px;
+        .shop-brand img {
+            height: 45px;
+            border-radius: 6px;
         }
 
-        .form-title p {
-            color: var(--muted);
-            font-size: 0.9em;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--primary);
-            font-size: 0.85em;
-            text-transform: uppercase;
+        .shop-brand h1 {
+            font-size: 1.3em;
+            font-weight: 700;
             letter-spacing: 0.5px;
         }
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 15px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+        .shop-brand .tagline {
+            font-size: 0.7em;
+            opacity: 0.7;
+            font-weight: 400;
         }
 
-        input:focus,
-        select:focus,
-        textarea:focus {
+        .cart-btn {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .cart-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .cart-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 20px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* === SEARCH & FILTER BAR === */
+        .toolbar {
+            max-width: 1200px;
+            margin: 25px auto 0;
+            padding: 0 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 60px;
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
         }
 
-        .id-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .id-row input {
-            flex: 1;
-        }
-
-        .items-box {
-            background: var(--light);
+        .cat-select {
+            padding: 12px 16px;
             border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            min-width: 180px;
+            cursor: pointer;
         }
 
-        .item-row {
+        .cat-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* === PRODUCT GRID === */
+        .products-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px 100px;
+        }
+
+        .product-count {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 15px;
+        }
+
+        .product-grid {
             display: grid;
-            grid-template-columns: 2fr 80px 120px 40px;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: end;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
         }
 
-        .btn {
-            padding: 12px 24px;
+        .product-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .product-cat {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            color: var(--primary);
+        }
+
+        .product-price {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+
+        .product-price span {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--muted);
+        }
+
+        .product-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .qty-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: var(--bg);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .qty-btn:hover {
+            background: #ddd;
+        }
+
+        .qty-val {
+            width: 40px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            background: white;
+            padding: 6px 0;
+        }
+
+        .add-cart-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
             border: none;
             border-radius: 8px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #ff6b6b);
-            color: white;
-            width: 100%;
-            font-size: 16px;
-            margin-top: 10px;
+        .add-cart-btn:hover {
+            background: #2d2d4e;
+            transform: translateY(-1px);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        .add-cart-btn.added {
+            background: var(--success);
         }
 
-        .btn-sm {
-            padding: 10px 16px;
-            font-size: 14px;
-            background: var(--primary);
-            color: white;
+        /* === CART SIDEBAR === */
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        .btn-add {
-            background: transparent;
-            border: 2px dashed var(--accent);
-            color: var(--accent);
-            padding: 10px;
-            margin-top: 10px;
+        .cart-overlay.active {
+            display: block;
+            opacity: 1;
         }
 
-        .btn-add:hover {
-            background: rgba(233, 69, 96, 0.05);
-        }
-
-        .btn-remove {
-            background: #dc3545;
-            color: white;
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        .options-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        /* === INVOICE PREVIEW (SCREEN) === */
-        #invoice-preview-screen {
-            max-width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
+        .cart-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            bottom: 0;
+            width: 400px;
+            max-width: 100vw;
             background: white;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        /* Common invoice styles (used in both screen and print) */
-        .invoice-header {
-            background: var(--primary);
-            color: white;
-            padding: 30px 40px;
+            z-index: 300;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            transition: right 0.3s ease;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.2);
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .cart-panel.active {
+            right: 0;
         }
 
-        .brand img {
-            height: 70px;
-            border-radius: 8px;
-        }
-
-        .brand-info h1 {
-            font-size: 1.6em;
-            margin-bottom: 2px;
-        }
-
-        .brand-info .tagline {
-            opacity: 0.8;
-            font-size: 0.9em;
-        }
-
-        .brand-info .social {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-            font-size: 0.85em;
-            opacity: 0.9;
-            color: white;
-            text-decoration: none;
-        }
-
-        .brand-info .social svg {
-            width: 14px;
-            height: 14px;
-            fill: white;
-        }
-
-        .invoice-title {
-            text-align: right;
-        }
-
-        .invoice-title h2 {
-            font-size: 2.2em;
-            font-weight: 700;
-            letter-spacing: 2px;
-        }
-
-        .invoice-title .inv-num {
-            font-size: 1.1em;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
-
-        .meta-section {
-            display: flex;
-            justify-content: space-between;
-            padding: 30px 40px 20px;
-            border-bottom: 2px solid var(--light);
-        }
-
-        .meta-block h4 {
-            color: var(--muted);
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .meta-block p {
-            font-size: 0.95em;
-            line-height: 1.6;
-            color: var(--text);
-        }
-
-        .items-section {
-            padding: 20px 40px;
-        }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .items-table th {
-            background: var(--light);
-            padding: 14px 12px;
-            text-align: left;
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--muted);
-            border-bottom: 2px solid var(--border);
-        }
-
-        .items-table th.right {
-            text-align: right;
-        }
-
-        .items-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 0.95em;
-        }
-
-        .items-table td.right {
-            text-align: right;
-            font-family: 'Courier New', monospace;
-        }
-
-        .items-table tbody tr:nth-child(even) {
-            background: #fafafa;
-        }
-
-        .summary-section {
-            display: flex;
-            justify-content: flex-end;
-            padding: 0 40px 20px;
-        }
-
-        .summary-box {
-            width: 280px;
-            background: var(--light);
-            border-radius: 12px;
+        .cart-header {
             padding: 20px;
-        }
-
-        .summary-row {
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            font-size: 0.95em;
+            align-items: center;
         }
 
-        .summary-row.discount {
-            color: #28a745;
+        .cart-header h2 {
+            font-size: 1.2em;
         }
 
-        .summary-row.total {
-            border-top: 2px solid var(--primary);
-            margin-top: 10px;
-            padding-top: 15px;
-            font-size: 1.3em;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .invoice-footer {
-            background: var(--light);
-            padding: 25px 40px;
-            text-align: center;
-            border-top: 1px solid var(--border);
-        }
-
-        /* Sticky footer positioning handled in print media query */
-
-        .footer-note {
-            font-style: italic;
+        .cart-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
             color: var(--muted);
-            margin-bottom: 5px;
-            font-size: 0.85em;
+            padding: 4px;
         }
 
-        .footer-thanks {
-            color: var(--text);
-            font-weight: 500;
+        .cart-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+        }
+
+        .cart-empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 0;
+            font-size: 14px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 14px;
             margin-bottom: 3px;
         }
 
-        .footer-contact {
+        .cart-item-meta {
+            font-size: 12px;
             color: var(--muted);
-            font-size: 0.85em;
         }
 
-        .print-only {
-            display: none;
+        .cart-item-price {
+            font-weight: 700;
+            font-size: 15px;
+            margin-left: 15px;
+            white-space: nowrap;
         }
 
-        /* === PRINT STYLES === */
-        @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-
-            body {
-                background: white;
-                margin: 0;
-                padding: 0;
-            }
-
-            .form-container,
-            #invoice-preview-screen,
-            .no-print {
-                display: none !important;
-            }
-
-            .print-only {
-                display: block !important;
-            }
-
-            .print-page {
-                width: 210mm;
-                height: 297mm;
-                /* Fixed A4 Height */
-                position: relative;
-                margin: 0;
-                padding: 0;
-                page-break-after: always;
-                box-sizing: border-box;
-                overflow: hidden;
-                /* Strict strict strict */
-            }
-
-            .print-page:last-child {
-                page-break-after: auto;
-            }
-
-            .invoice-header {
-                padding: 20px 40px;
-            }
-
-            .meta-section {
-                padding: 10px 40px;
-            }
-
-            .items-section {
-                padding: 10px 40px;
-            }
-
-            /* Sticky Footer for Print Page */
-            .invoice-footer {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                padding: 20px 40px 30px 40px;
-                border-top: 1px solid var(--border);
-                background: white;
-                /* Ensure it covers content behind if any */
-            }
-
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 10px;
+            padding: 4px;
         }
 
-        /* === CUSTOM SUGGESTION DROPDOWN === */
-        .suggestion-wrapper {
-            position: relative;
+        .cart-footer {
+            padding: 20px;
+            border-top: 2px solid var(--border);
+            background: #fafafa;
         }
 
-        .suggestion-list {
-            display: none;
-            position: absolute;
-            top: 100%;
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkout-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* === CHECKOUT MODAL === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
             left: 0;
             right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 400;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.flex {
+            display: flex;
+        }
+
+        .modal {
             background: white;
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            max-height: 200px;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
             overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin: 20px;
         }
 
-        .suggestion-list.active {
+        .modal h2 {
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .modal .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .modal .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal label {
             display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
-        .suggestion-item {
-            padding: 10px 14px;
+        .modal input,
+        .modal textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .modal input:focus,
+        .modal textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .radio-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
             cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover {
+            border-color: var(--accent);
+        }
+
+        .radio-option.selected {
+            border-color: var(--accent);
+            background: #fef2f2;
+            color: var(--accent);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: white;
             font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-place-order {
+            flex: 2;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-place-order:hover {
+            background: #047857;
+        }
+
+        .btn-place-order:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* === ORDER CONFIRMATION === */
+        .confirmation {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .confirmation .check-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .confirmation h2 {
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .confirmation .order-no {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 15px 0;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 10px;
+        }
+
+        .confirmation p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .btn-continue {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* === INVOICE PREVIEW IN CART === */
+        .invoice-preview {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            background: #fafbfc;
+        }
+
+        .invoice-preview h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .invoice-preview table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+
+        .invoice-preview th {
+            text-align: left;
+            padding: 6px 4px;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .invoice-preview td {
+            padding: 6px 4px;
             border-bottom: 1px solid #f0f0f0;
         }
 
-        .suggestion-item:hover,
-        .suggestion-item.active {
-            background: #eff6ff;
-            color: #1d4ed8;
+        .invoice-preview .total-row td {
+            font-weight: 700;
+            border-top: 2px solid var(--primary);
+            padding-top: 10px;
         }
 
-        .suggestion-item .cat {
-            font-size: 11px;
-            color: var(--muted);
-            float: right;
-        }
-
-        /* === MOBILE ONLY === */
+        /* === MOBILE === */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
+            .shop-header {
+                padding: 0 15px;
+                height: 60px;
             }
 
-            .form-container {
-                padding: 15px;
-                border-radius: 12px;
-                margin-bottom: 20px;
+            .shop-brand h1 {
+                font-size: 1.1em;
             }
 
-            #auth-controls {
-                position: static !important;
-                display: flex;
-                gap: 8px;
-                margin-bottom: 15px;
+            .shop-brand .tagline {
+                display: none;
             }
 
-            #auth-controls button {
-                flex: 1;
-                font-size: 12px !important;
-                padding: 10px 8px !important;
+            .shop-brand img {
+                height: 36px;
             }
 
-            .form-title h2 {
-                font-size: 1.3em;
-            }
-
-            .form-title p {
-                font-size: 0.8em;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .id-row {
+            .toolbar {
                 flex-direction: column;
+                gap: 10px;
+                margin-top: 15px;
             }
 
-            .item-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
-                padding: 12px;
-                background: white;
-                border-radius: 8px;
-                border: 1px solid var(--border);
-                margin-bottom: 12px;
+            .cat-select {
+                min-width: 100%;
             }
 
-            .item-row .item-desc {
-                font-size: 16px;
-                /* Prevent iOS zoom */
-            }
-
-            .item-row .item-qty,
-            .item-row .item-price {
-                font-size: 16px;
-            }
-
-            .item-row .btn-remove {
-                justify-self: end;
-                width: 40px;
-                height: 40px;
-                padding: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .items-box {
-                padding: 12px;
-            }
-
-            .options-row {
-                grid-template-columns: 1fr;
+            .product-grid {
+                grid-template-columns: 1fr 1fr;
                 gap: 10px;
             }
 
-            .btn-primary {
+            .product-card {
                 padding: 14px;
-                font-size: 15px;
             }
 
-            /* Invoice Preview - Compact on mobile */
-            #invoice-preview-screen {
-                min-height: auto;
-                margin-top: 20px;
+            .product-name {
+                font-size: 13px;
             }
 
-            .invoice-header {
+            .product-price {
+                font-size: 18px;
+            }
+
+            .product-actions {
                 flex-direction: column;
-                padding: 15px;
-                gap: 10px;
-                text-align: center;
             }
 
-            .brand {
+            .qty-control {
+                width: 100%;
                 justify-content: center;
             }
 
-            .brand img {
-                height: 50px;
-            }
-
-            .brand-info h1 {
-                font-size: 1.2em;
-            }
-
-            .brand-info .tagline {
-                font-size: 0.8em;
-            }
-
-            .brand-info .social {
-                justify-content: center;
-                font-size: 0.75em;
-            }
-
-            .invoice-title {
-                text-align: center;
-            }
-
-            .invoice-title h2 {
-                font-size: 1.5em;
-            }
-
-            .meta-section {
-                flex-direction: column;
-                padding: 15px;
-                gap: 10px;
-            }
-
-            .meta-section .meta-block:last-child {
-                text-align: left !important;
-            }
-
-            .items-section {
-                padding: 10px;
-            }
-
-            .items-table th,
-            .items-table td {
-                padding: 8px 6px;
-                font-size: 0.8em;
-            }
-
-            .summary-section {
-                padding: 10px;
-            }
-
-            .summary-box {
+            .add-cart-btn {
                 width: 100%;
             }
 
-            .invoice-footer {
-                padding: 15px;
+            .cart-panel {
+                width: 100%;
+                right: -100%;
             }
 
-            .footer-note,
-            .footer-contact {
-                font-size: 0.75em;
+            .modal {
+                margin: 10px;
+                padding: 20px;
             }
+        }
 
-            .footer-thanks {
-                font-size: 0.85em;
+        @media (max-width: 400px) {
+            .product-grid {
+                grid-template-columns: 1fr;
             }
+        }
+
+        /* === NO PRODUCTS === */
+        .no-products {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+
+        .no-products .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- PRINT AREA (Generated by JS) -->
-    <div id="print-area" class="print-only"></div>
-
-    <!-- INPUT FORM -->
-    <div class="form-container no-print" style="position: relative;">
-        <div id="auth-controls" style="position: absolute; top: 15px; right: 15px; z-index: 10;">
-            <button onclick="window.location.href='manager.html'"
-                style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">Manager
-                Dashboard</button>
-            <button onclick="window.location.href='orders.html'"
-                style="padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">📦
-                Orders</button>
-            <button onclick="Auth.logout()"
-                style="padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Logout</button>
-        </div>
-        <div class="form-title">
-            <h2>📝 Create Invoice</h2>
-            <p>Fill in the details below — invoice updates in real-time</p>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Invoice Date</label>
-                <input type="date" id="invDate">
-            </div>
-            <div class="form-group">
-                <label>Invoice Number</label>
-                <div class="id-row">
-                    <input type="text" id="invId" placeholder="INV-1001">
-                    <button class="btn btn-sm" onclick="incrementId()">Next →</button>
-                </div>
+    <!-- HEADER -->
+    <header class="shop-header">
+        <div class="shop-brand">
+            <img src="Short Circuit .PNG" alt="Logo" onerror="this.style.display='none'">
+            <div>
+                <h1>SHORT CIRCUIT</h1>
+                <div class="tagline">Electronics Shop • IUT</div>
             </div>
         </div>
+        <button class="cart-btn" onclick="toggleCart()">
+            🛒 Cart <span class="cart-badge" id="cartCount">0</span>
+        </button>
+    </header>
 
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Customer Name</label>
-                <input type="text" id="custName" placeholder="John Doe">
-            </div>
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="text" id="custPhone" placeholder="01700-000000">
-            </div>
+    <!-- SEARCH & FILTER -->
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search products..." oninput="filterProducts()">
         </div>
-
-        <div class="form-group">
-            <label>Customer Address</label>
-            <textarea id="custAddress" placeholder="123 Main Street, Dhaka"></textarea>
-        </div>
-
-        <div class="items-box">
-            <label>Items (Max 20 per page automatically)</label>
-            <div id="itemsContainer">
-                <div class="item-row">
-                    <div class="suggestion-wrapper">
-                        <input type="text" class="item-desc" placeholder="Item description" list="price-list-options"
-                            oninput="handleItemInput(this)" onfocus="showSuggestions(this)" autocomplete="off">
-                        <div class="suggestion-list"></div>
-                    </div>
-                    <input type="number" class="item-qty" placeholder="Qty" value="1" min="1">
-                    <input type="number" class="item-price" placeholder="Price" min="0">
-                    <button class="btn btn-remove" onclick="removeItem(this)">×</button>
-                </div>
-            </div>
-            <button class="btn btn-add" onclick="addItem()">+ Add Item</button>
-        </div>
-
-        <div class="options-row">
-            <div class="form-group">
-                <label>Discount (Tk)</label>
-                <input type="number" id="discount" value="0" min="0">
-            </div>
-            <div class="form-group">
-                <label>Delivery Location</label>
-                <select id="delivery">
-                    <option value="0">Inside IUT (Free)</option>
-                    <option value="120">Outside IUT (120 Tk)</option>
-                </select>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print Invoice</button>
+        <select class="cat-select" id="catFilter" onchange="filterProducts()">
+            <option value="">All Categories</option>
+        </select>
     </div>
 
-    <!-- INVOICE PREVIEW (SCREEN ONLY) -->
-    <div id="invoice-preview-screen">
-        <div class="invoice-header">
-            <div class="brand">
-                <img src="Short Circuit .PNG" alt="Logo">
-                <div class="brand-info">
-                    <h1>SHORT CIRCUIT</h1>
-                    <div class="tagline">Electronics Shop</div>
-                    <a href="https://www.facebook.com/ShortCircuitIUT" class="social" target="_blank">
-                        <svg viewBox="0 0 24 24">
-                            <path
-                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                        </svg>
-                        ShortCircuitIUT
-                    </a>
-                </div>
+    <!-- PRODUCTS -->
+    <div class="products-container">
+        <div class="product-count" id="productCount"></div>
+        <div class="product-grid" id="productGrid">
+            <div class="no-products">
+                <div class="icon">⏳</div>
+                <p>Loading products...</p>
             </div>
-            <div class="invoice-title">
-                <h2>INVOICE</h2>
-                <div class="inv-num">#<span id="dispId">INV-1001</span></div>
-            </div>
-        </div>
-
-        <div class="meta-section">
-            <div class="meta-block">
-                <h4>Bill To</h4>
-                <p><strong id="dispName">Customer Name</strong></p>
-                <p id="dispPhone">Phone Number</p>
-                <p id="dispAddress">Address</p>
-            </div>
-            <div class="meta-block" style="text-align:right;">
-                <h4>Invoice Date</h4>
-                <p id="dispDate">--</p>
-            </div>
-        </div>
-
-        <div class="items-section">
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th class="right">Qty</th>
-                        <th class="right">Unit Price</th>
-                        <th class="right">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="itemsBody"></tbody>
-            </table>
-        </div>
-
-        <div class="summary-section">
-            <div class="summary-box">
-                <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span id="dispSubtotal">0 Tk</span>
-                </div>
-                <div class="summary-row discount" id="discountRow" style="display:none;">
-                    <span>Discount</span>
-                    <span id="dispDiscount">-0 Tk</span>
-                </div>
-                <div class="summary-row">
-                    <span>Delivery</span>
-                    <span id="dispDelivery">0 Tk</span>
-                </div>
-                <div class="summary-row total">
-                    <span>Total</span>
-                    <span id="dispTotal">0 Tk</span>
-                </div>
-                <div class="summary-row no-print"
-                    style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 5px; color: green;">
-                    <span>Net Profit</span>
-                    <span id="dispProfit">0 Tk</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="invoice-footer">
-            <p class="footer-note">This is a system generated invoice, no signature required.</p>
-            <p class="footer-thanks">Thank you for shopping with Short Circuit!</p>
-            <p class="footer-contact">For queries, contact us on our Facebook page.</p>
         </div>
     </div>
 
+    <!-- CART OVERLAY -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 
+    <!-- CART PANEL -->
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h2>🛒 Your Cart</h2>
+            <button class="cart-close" onclick="toggleCart()">✕</button>
+        </div>
+        <div class="cart-body" id="cartBody">
+            <div class="cart-empty">Your cart is empty</div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display:none;">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cartTotal">0 Tk</span>
+            </div>
+            <button class="checkout-btn" onclick="openCheckout()">Proceed to Order</button>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal" id="checkoutContent">
+            <!-- Dynamic content -->
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="db.js"></script>
-    <script src="auth.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
-            const savedId = localStorage.getItem('sc_invoice_num') || '1001';
-            document.getElementById('invId').value = 'INV-' + savedId;
-            attachListeners();
-            populatePriceList();
-            updatePreview();
+        let allProducts = [];
+        let cart = [];
+
+        // Load products on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            allProducts = await DB.fetchProducts();
+            // Filter out items with 0 price
+            allProducts = allProducts.filter(p => p.price && p.price > 0);
+
+            // Populate category filter
+            const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+            const catFilter = document.getElementById('catFilter');
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catFilter.appendChild(opt);
+            });
+
+            renderProducts(allProducts);
         });
 
-        async function populatePriceList() {
-            const datalist = document.getElementById('price-list-options') || document.createElement('datalist');
-            if (!datalist.id) {
-                datalist.id = 'price-list-options';
-                document.body.appendChild(datalist);
-            }
-            datalist.innerHTML = ''; // Clear existing options
+        function filterProducts() {
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            const cat = document.getElementById('catFilter').value;
 
-            // Fetch from Supabase
-            if (typeof DB !== 'undefined') {
-                window.PRICE_LIST = await DB.fetchProducts(); // Store globally for handleItemInput
-
-                if (window.PRICE_LIST && window.PRICE_LIST.length > 0) {
-                    window.PRICE_LIST.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.name;
-                        datalist.appendChild(option);
-                    });
-                }
+            let filtered = allProducts;
+            if (search) {
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
             }
+            if (cat) {
+                filtered = filtered.filter(p => p.category === cat);
+            }
+            renderProducts(filtered);
         }
 
-        function handleItemInput(input) {
-            const val = input.value;
-            // Auto-fill price if exact match
-            if (typeof window.PRICE_LIST !== 'undefined') {
-                const item = window.PRICE_LIST.find(p => p.name === val);
-                if (item) {
-                    const row = input.closest('.item-row');
-                    const priceInput = row.querySelector('.item-price');
-                    priceInput.value = item.price;
-                    updatePreview();
-                }
-            }
-            // Show custom suggestions
-            showSuggestions(input);
-        }
+        function renderProducts(products) {
+            const grid = document.getElementById('productGrid');
+            document.getElementById('productCount').textContent = `${products.length} product${products.length !== 1 ? 's' : ''} found`;
 
-        function showSuggestions(input) {
-            const wrapper = input.closest('.suggestion-wrapper');
-            if (!wrapper) return;
-            const list = wrapper.querySelector('.suggestion-list');
-            if (!list || !window.PRICE_LIST) return;
-
-            const val = input.value.toLowerCase().trim();
-            if (val.length === 0) {
-                list.classList.remove('active');
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="no-products"><div class="icon">🔍</div><p>No products match your search</p></div>';
                 return;
             }
 
-            const matches = window.PRICE_LIST.filter(p =>
-                p.name.toLowerCase().includes(val)
-            ).slice(0, 15);
-
-            if (matches.length === 0 || (matches.length === 1 && matches[0].name === input.value)) {
-                list.classList.remove('active');
-                return;
-            }
-
-            list.innerHTML = matches.map(m =>
-                `<div class="suggestion-item" data-name="${m.name}" data-price="${m.price}">
-                    ${m.name} <span class="cat">${m.category || ''}</span>
-                </div>`
-            ).join('');
-
-            list.querySelectorAll('.suggestion-item').forEach(item => {
-                item.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    input.value = item.dataset.name;
-                    const row = input.closest('.item-row');
-                    row.querySelector('.item-price').value = item.dataset.price;
-                    list.classList.remove('active');
-                    updatePreview();
-                });
-                item.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    input.value = item.dataset.name;
-                    const row = input.closest('.item-row');
-                    row.querySelector('.item-price').value = item.dataset.price;
-                    list.classList.remove('active');
-                    updatePreview();
-                });
-            });
-
-            list.classList.add('active');
-        }
-
-        // Close suggestions when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.suggestion-wrapper')) {
-                document.querySelectorAll('.suggestion-list').forEach(l => l.classList.remove('active'));
-            }
-        });
-
-        function attachListeners() {
-            document.querySelectorAll('input, select, textarea').forEach(el => {
-                el.addEventListener('input', updatePreview);
-            });
-        }
-
-        function addItem() {
-            const container = document.getElementById('itemsContainer');
-            const row = document.createElement('div');
-            row.className = 'item-row';
-            row.innerHTML = `
-                <div class="suggestion-wrapper">
-                    <input type="text" class="item-desc" placeholder="Item description" list="price-list-options" oninput="handleItemInput(this)" onfocus="showSuggestions(this)" autocomplete="off">
-                    <div class="suggestion-list"></div>
+            grid.innerHTML = products.map(p => `
+                <div class="product-card" data-id="${p.id}">
+                    <div class="product-cat">${p.category || 'General'}</div>
+                    <div class="product-name">${p.name}</div>
+                    <div class="product-price">${p.price} <span>Tk</span></div>
+                    <div class="product-actions">
+                        <div class="qty-control">
+                            <button class="qty-btn" onclick="changeQty(${p.id}, -1)">−</button>
+                            <input type="number" class="qty-val" id="qty-${p.id}" value="1" min="1" max="99" onchange="clampQty(${p.id})">
+                            <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
+                        </div>
+                        <button class="add-cart-btn" id="addBtn-${p.id}" onclick="addToCart(${p.id})">Add to Cart</button>
+                    </div>
                 </div>
-                <input type="number" class="item-qty" placeholder="Qty" value="1" min="1">
-                <input type="number" class="item-price" placeholder="Price" min="0">
-                <button class="btn btn-remove" onclick="removeItem(this)">×</button>
-            `;
-            container.appendChild(row);
-            attachListeners();
+            `).join('');
         }
 
-        function removeItem(btn) {
-            if (document.querySelectorAll('.item-row').length > 1) {
-                btn.parentElement.remove();
-                updatePreview();
-            }
+        function changeQty(id, delta) {
+            const input = document.getElementById(`qty-${id}`);
+            let val = parseInt(input.value) || 1;
+            val = Math.max(1, Math.min(99, val + delta));
+            input.value = val;
         }
 
-        function incrementId() {
-            const input = document.getElementById('invId');
-            const match = input.value.match(/(\d+)$/);
-            if (match) {
-                const num = parseInt(match[0]) + 1;
-                input.value = input.value.substring(0, match.index) + num;
-                updatePreview();
-            }
+        function clampQty(id) {
+            const input = document.getElementById(`qty-${id}`);
+            let val = parseInt(input.value) || 1;
+            input.value = Math.max(1, Math.min(99, val));
         }
 
-        function saveInvoiceNumber() {
-            const match = document.getElementById('invId').value.match(/(\d+)$/);
-            if (match) {
-                localStorage.setItem('sc_invoice_num', (parseInt(match[0]) + 1).toString());
-            }
-        }
+        function addToCart(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return;
 
-        function updatePreview() {
-            // Update Screen Preview
-            const dateVal = document.getElementById('invDate').value;
-            if (dateVal) {
-                document.getElementById('dispDate').textContent = new Date(dateVal).toLocaleDateString('en-GB', {
-                    day: 'numeric', month: 'long', year: 'numeric'
-                });
-            }
+            const qty = parseInt(document.getElementById(`qty-${productId}`).value) || 1;
 
-            document.getElementById('dispId').textContent = document.getElementById('invId').value;
-            document.getElementById('dispName').textContent = document.getElementById('custName').value || 'Customer Name';
-            document.getElementById('dispPhone').textContent = document.getElementById('custPhone').value || 'Phone Number';
-            document.getElementById('dispAddress').textContent = document.getElementById('custAddress').value || 'Address';
-
-            const tbody = document.getElementById('itemsBody');
-            tbody.innerHTML = '';
-            let subtotal = 0;
-
-            document.querySelectorAll('.item-row').forEach(row => {
-                const desc = row.querySelector('.item-desc').value;
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const price = parseFloat(row.querySelector('.item-price').value) || 0;
-
-                if (desc || price > 0) {
-                    const total = qty * price;
-                    subtotal += total;
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${desc || '-'}</td>
-                        <td class="right">${qty}</td>
-                        <td class="right">${price.toFixed(2)} Tk</td>
-                        <td class="right">${total.toFixed(2)} Tk</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            const discount = parseFloat(document.getElementById('discount').value) || 0;
-            const delivery = parseFloat(document.getElementById('delivery').value) || 0;
-            const grandTotal = subtotal - discount + delivery;
-
-            document.getElementById('dispSubtotal').textContent = subtotal.toFixed(2) + ' Tk';
-
-            const discRow = document.getElementById('discountRow');
-            if (discount > 0) {
-                discRow.style.display = 'flex';
-                document.getElementById('dispDiscount').textContent = '-' + discount.toFixed(2) + ' Tk';
+            const existing = cart.find(c => c.id === productId);
+            if (existing) {
+                existing.quantity += qty;
             } else {
-                discRow.style.display = 'none';
-            }
-
-            document.getElementById('dispDelivery').textContent = delivery.toFixed(2) + ' Tk';
-            document.getElementById('dispTotal').textContent = grandTotal.toFixed(2) + ' Tk';
-
-            // Calculate Profit
-            let totalProfit = 0;
-            document.querySelectorAll('.item-row').forEach(row => {
-                const desc = row.querySelector('.item-desc').value;
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const price = parseFloat(row.querySelector('.item-price').value) || 0;
-
-                if (desc && window.PRICE_LIST) {
-                    const item = window.PRICE_LIST.find(p => p.name === desc);
-                    if (item) {
-                        const buyingPrice = parseFloat(item.buying_price) || 0;
-                        if (buyingPrice > 0) {
-                            totalProfit += (price - buyingPrice) * qty;
-                        }
-                    }
-                }
-            });
-            totalProfit -= discount;
-            document.getElementById('dispProfit').textContent = totalProfit.toFixed(2) + ' Tk';
-            document.getElementById('dispProfit').style.color = totalProfit >= 0 ? 'green' : 'red';
-        }
-
-        function generatePrintPages() {
-            const printArea = document.getElementById('print-area');
-            printArea.innerHTML = '';
-
-            const items = [];
-            document.querySelectorAll('.item-row').forEach(row => {
-                const desc = row.querySelector('.item-desc').value;
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const price = parseFloat(row.querySelector('.item-price').value) || 0;
-                if (desc || price > 0) {
-                    items.push({ desc, qty, price, total: qty * price });
-                }
-            });
-
-            const ITEMS_PER_PAGE = 20;
-            const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE) || 1;
-
-            for (let i = 0; i < totalPages; i++) {
-                const isLastPage = (i === totalPages - 1);
-                const pageItems = items.slice(i * ITEMS_PER_PAGE, (i + 1) * ITEMS_PER_PAGE);
-
-                const page = document.createElement('div');
-                page.className = 'print-page';
-
-                // Header
-                const headerHtml = `
-                    <div class="invoice-header">
-                        <div class="brand">
-                            <img src="Short Circuit .PNG" alt="Logo">
-                            <div class="brand-info">
-                                <h1>SHORT CIRCUIT</h1>
-                                <div class="tagline">Electronics Shop</div>
-                                <a href="https://www.facebook.com/ShortCircuitIUT" class="social">
-                                    <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                    ShortCircuitIUT
-                                </a>
-                            </div>
-                        </div>
-                        <div class="invoice-title">
-                            <h2>INVOICE</h2>
-                            <div class="inv-num">#${document.getElementById('invId').value}</div>
-                        </div>
-                    </div>
-                `;
-
-                // Meta Info (Show on all pages for context)
-                const metaHtml = `
-                    <div class="meta-section">
-                        <div class="meta-block">
-                            <h4>Bill To</h4>
-                            <p><strong>${document.getElementById('custName').value}</strong></p>
-                            <p>${document.getElementById('custPhone').value}</p>
-                            <p>${document.getElementById('custAddress').value}</p>
-                        </div>
-                        <div class="meta-block" style="text-align:right;">
-                            <h4>Date</h4>
-                            <p>${document.getElementById('dispDate').textContent}</p>
-                        </div>
-                    </div>
-                `;
-
-                // Items Table
-                let itemsHtml = `
-                    <div class="items-section">
-                        <table class="items-table">
-                            <thead>
-                                <tr>
-                                    <th>Description</th>
-                                    <th class="right">Qty</th>
-                                    <th class="right">Unit Price</th>
-                                    <th class="right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-
-                pageItems.forEach(item => {
-                    itemsHtml += `
-                        <tr>
-                            <td>${item.desc || '-'}</td>
-                            <td class="right">${item.qty}</td>
-                            <td class="right">${item.price.toFixed(2)} Tk</td>
-                            <td class="right">${item.total.toFixed(2)} Tk</td>
-                        </tr>
-                    `;
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: qty
                 });
-                itemsHtml += `</tbody></table></div>`;
+            }
 
-                // Summary (Last Page Only)
-                let summaryHtml = '';
-                if (isLastPage) {
-                    const subtotal = document.getElementById('dispSubtotal').textContent;
-                    const discount = document.getElementById('dispDiscount').textContent;
-                    const delivery = document.getElementById('dispDelivery').textContent;
-                    const total = document.getElementById('dispTotal').textContent;
-                    const discountVal = parseFloat(document.getElementById('discount').value) || 0;
-                    const discDisplay = discountVal > 0 ? 'flex' : 'none';
+            // Visual feedback
+            const btn = document.getElementById(`addBtn-${productId}`);
+            btn.textContent = '✓ Added';
+            btn.classList.add('added');
+            setTimeout(() => {
+                btn.textContent = 'Add to Cart';
+                btn.classList.remove('added');
+            }, 1200);
 
-                    summaryHtml = `
-                        <div class="summary-section">
-                            <div class="summary-box">
-                                <div class="summary-row"><span>Subtotal</span><span>${subtotal}</span></div>
-                                <div class="summary-row discount" style="display:${discDisplay}"><span>Discount</span><span>${discount}</span></div>
-                                <div class="summary-row"><span>Delivery</span><span>${delivery}</span></div>
-                                <div class="summary-row total"><span>Total</span><span>${total}</span></div>
-                            </div>
+            updateCartUI();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(c => c.id !== productId);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, c) => sum + c.quantity, 0);
+            const total = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+
+            document.getElementById('cartCount').textContent = count;
+            document.getElementById('cartTotal').textContent = total.toLocaleString() + ' Tk';
+
+            const body = document.getElementById('cartBody');
+            const footer = document.getElementById('cartFooter');
+
+            if (cart.length === 0) {
+                body.innerHTML = '<div class="cart-empty">Your cart is empty</div>';
+                footer.style.display = 'none';
+                return;
+            }
+
+            footer.style.display = 'block';
+
+            let html = '';
+            cart.forEach(item => {
+                html += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-meta">${item.quantity} × ${item.price} Tk</div>
                         </div>
-                    `;
-                }
+                        <div class="cart-item-price">${(item.quantity * item.price).toLocaleString()} Tk</div>
+                        <button class="cart-item-remove" onclick="removeFromCart(${item.id})">✕</button>
+                    </div>
+                `;
+            });
 
-                // Footer
-                const footerHtml = `
-                    <div class="invoice-footer">
-                        <p class="footer-note">This is a system generated invoice, no signature required.</p>
-                        <p class="footer-thanks">Thank you for shopping with Short Circuit!</p>
-                        <p class="footer-contact">For queries, contact us on our Facebook page.</p>
-                        <p style="margin-top:5px;font-weight:600;font-size:0.8em;color:#1a1a2e">Page ${i + 1} of ${totalPages}</p>
+            // Invoice preview
+            html += `
+                <div class="invoice-preview">
+                    <h4>Invoice Preview</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            ${cart.map(item => `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${item.price} Tk</td>
+                                    <td>${(item.quantity * item.price).toLocaleString()} Tk</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row">
+                                <td colspan="3">Total</td>
+                                <td>${total.toLocaleString()} Tk</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            body.innerHTML = html;
+        }
+
+        function toggleCart() {
+            const panel = document.getElementById('cartPanel');
+            const overlay = document.getElementById('cartOverlay');
+            panel.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function openCheckout() {
+            if (cart.length === 0) return;
+            toggleCart(); // Close cart
+
+            const modal = document.getElementById('checkoutModal');
+            const content = document.getElementById('checkoutContent');
+
+            const total = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+            const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            content.innerHTML = `
+                <h2>📦 Place Your Order</h2>
+                <p class="subtitle">Total: ${total.toLocaleString()} Tk • ${today}</p>
+
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="orderName" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" id="orderPhone" placeholder="01XXXXXXXXX" required>
+                </div>
+                <div class="form-group">
+                    <label>Address *</label>
+                    <textarea id="orderAddress" placeholder="Room, Hall, or delivery address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Delivery Location</label>
+                    <div class="radio-group">
+                        <div class="radio-option selected" onclick="selectDelivery(this, 'Inside IUT')">Inside IUT (Free)</div>
+                        <div class="radio-option" onclick="selectDelivery(this, 'Outside IUT')">Outside IUT (120 Tk)</div>
+                    </div>
+                    <input type="hidden" id="orderDelivery" value="Inside IUT">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeCheckout()">Cancel</button>
+                    <button class="btn-place-order" id="placeOrderBtn" onclick="placeOrder()">✓ Place Order</button>
+                </div>
+            `;
+
+            modal.classList.add('flex');
+        }
+
+        function selectDelivery(el, value) {
+            document.querySelectorAll('.radio-option').forEach(r => r.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('orderDelivery').value = value;
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').classList.remove('flex');
+        }
+
+        async function placeOrder() {
+            const name = document.getElementById('orderName').value.trim();
+            const phone = document.getElementById('orderPhone').value.trim();
+            const address = document.getElementById('orderAddress').value.trim();
+            const delivery = document.getElementById('orderDelivery').value;
+
+            if (!name || !phone || !address) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const btn = document.getElementById('placeOrderBtn');
+            btn.disabled = true;
+            btn.textContent = 'Placing order...';
+
+            try {
+                const items = cart.map(c => ({
+                    product_name: c.name,
+                    quantity: c.quantity,
+                    unit_price: c.price
+                }));
+
+                const order = await DB.createOrder({
+                    customer_name: name,
+                    customer_phone: phone,
+                    customer_address: address,
+                    delivery_location: delivery
+                }, items);
+
+                // Show confirmation
+                const content = document.getElementById('checkoutContent');
+                content.innerHTML = `
+                    <div class="confirmation">
+                        <div class="check-icon">✅</div>
+                        <h2>Order Placed!</h2>
+                        <div class="order-no">${order.order_no || 'SC-' + String(order.id).padStart(4, '0')}</div>
+                        <p>Your order has been received. We'll process it shortly.<br>
+                        Save your order number for reference.</p>
+                        <button class="btn-continue" onclick="orderComplete()">Continue Shopping</button>
                     </div>
                 `;
 
-                page.innerHTML = headerHtml + metaHtml + itemsHtml + summaryHtml + footerHtml;
-                printArea.appendChild(page);
+                cart = [];
+                updateCartUI();
+
+            } catch (err) {
+                console.error(err);
+                alert('Failed to place order. Please try again.');
+                btn.disabled = false;
+                btn.textContent = '✓ Place Order';
             }
         }
 
-        function printInvoice() {
-            saveInvoiceNumber();
-            generatePrintPages();
-            window.print();
+        function orderComplete() {
+            closeCheckout();
         }
     </script>
 </body>
