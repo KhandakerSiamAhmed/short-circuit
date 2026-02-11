@@ -352,6 +352,46 @@
                 /* Prevent iOS zoom */
             }
         }
+
+        .bundle-items-list {
+            margin-top: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .bundle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            padding: 4px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .bundle-item:last-child {
+            border-bottom: none;
+        }
+
+        .btn-remove-item {
+            color: #dc2626;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .badge-bundle {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .hidden-bundle {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -378,9 +418,26 @@
                 <div><input type="number" id="newPrice" placeholder="Selling Price (Tk)" required></div>
                 <div><input type="text" id="newCategory" placeholder="Category" list="categoryList"></div>
                 <div><input type="number" id="newStock" placeholder="Current Stock (Optional)"></div>
-                <button type="submit" class="btn-primary">Add Item</button>
+                <div style="grid-column: 1/-1; display:flex; align-items:center; gap:10px; margin-top:5px;">
+                    <input type="checkbox" id="newIsBundle" style="width:auto;" onchange="toggleBundleSection('new')">
+                    <label for="newIsBundle" style="font-size:14px; font-weight:600;">Is this a Bundle?</label>
+                </div>
+                <!-- Bundle Item Builder -->
+                <div id="newBundleSection" class="hidden-bundle"
+                    style="grid-column: 1/-1; border-top:1px solid #e5e7eb; padding-top:10px;">
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="newBundleItemSearch" placeholder="Search product to add..."
+                            list="allProductsList">
+                        <input type="number" id="newBundleItemQty" placeholder="Qty" style="width:80px;" value="1">
+                        <button type="button" class="btn-sm btn-nav" style="margin:0;"
+                            onclick="addToBundleList('new')">Add</button>
+                    </div>
+                    <div id="newBundleItemsPreview" class="bundle-items-list"></div>
+                </div>
+                <button type="submit" class="btn-primary" style="grid-column: 1/-1;">Add Item</button>
             </form>
             <datalist id="categoryList"></datalist>
+            <datalist id="allProductsList"></datalist>
         </div>
 
         <!-- Filters -->
@@ -425,6 +482,22 @@
                         Stock</label>
                     <input type="number" id="editStock">
                 </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="editIsBundle" style="width:auto;" onchange="toggleBundleSection('edit')">
+                    <label for="editIsBundle" style="font-size:14px; font-weight:600;">Is this a Bundle?</label>
+                </div>
+                <!-- Edit Bundle Items -->
+                <div id="editBundleSection" class="hidden-bundle"
+                    style="border-top:1px solid #e5e7eb; padding-top:10px;">
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="editBundleItemSearch" placeholder="Search product..."
+                            list="allProductsList">
+                        <input type="number" id="editBundleItemQty" placeholder="Qty" style="width:60px;" value="1">
+                        <button type="button" class="btn-sm btn-nav" style="margin:0;"
+                            onclick="addToBundleList('edit')">Add</button>
+                    </div>
+                    <div id="editBundleItemsPreview" class="bundle-items-list"></div>
+                </div>
             </div>
             <div class="modal-actions">
                 <button type="button" onclick="closeModal()" class="btn-sm" style="margin-right:10px;">Cancel</button>
@@ -447,10 +520,15 @@
                 const price = parseFloat(document.getElementById('newPrice').value) || 0;
                 const category = document.getElementById('newCategory').value || 'Uncategorized';
                 const stock = document.getElementById('newStock').value ? parseInt(document.getElementById('newStock').value) : null;
+                const is_bundle = document.getElementById('newIsBundle').checked;
+                const bundle_items = is_bundle ? currentAddBundleItems : [];
 
                 try {
-                    await DB.addProduct({ name, buying_price, price, category, stock });
+                    await DB.addProduct({ name, buying_price, price, category, stock, is_bundle, bundle_items });
                     document.getElementById('addForm').reset();
+                    currentAddBundleItems = [];
+                    renderBundleItems('new');
+                    toggleBundleSection('new');
                     loadProducts();
                 } catch (err) {
                     alert('Failed to add product');
@@ -469,6 +547,7 @@
 
             allProducts = await DB.fetchProducts();
             updateCategories(allProducts);
+            updateProductDatalist();
             renderProducts();
 
             document.getElementById('loading').classList.add('hidden');
@@ -521,7 +600,10 @@
                 card.innerHTML = `
                     <div class="product-header">
                         <h3>${p.name}</h3>
-                        <span class="badge">${p.category || 'Uncategorized'}</span>
+                        <div style="display:flex; gap:5px;">
+                            ${p.is_bundle ? '<span class="badge badge-bundle">Bundle</span>' : ''}
+                            <span class="badge">${p.category || 'Uncategorized'}</span>
+                        </div>
                     </div>
                     
                     <div class="price-row">
@@ -581,6 +663,11 @@
             document.getElementById('editCategory').value = p.category || '';
             document.getElementById('editStock').value = p.stock !== null ? p.stock : '';
 
+            document.getElementById('editIsBundle').checked = p.is_bundle || false;
+            currentEditBundleItems = p.bundle_items || [];
+            renderBundleItems('edit');
+            toggleBundleSection('edit');
+
             document.getElementById('editModal').classList.remove('hidden');
             document.getElementById('editModal').classList.add('flex');
         };
@@ -597,9 +684,11 @@
             const price = parseFloat(document.getElementById('editPrice').value) || 0;
             const category = document.getElementById('editCategory').value;
             const stock = document.getElementById('editStock').value === '' ? null : parseInt(document.getElementById('editStock').value);
+            const is_bundle = document.getElementById('editIsBundle').checked;
+            const bundle_items = is_bundle ? currentEditBundleItems : [];
 
             try {
-                await DB.updateProduct(id, { name, buying_price, price, category, stock });
+                await DB.updateProduct(id, { name, buying_price, price, category, stock, is_bundle, bundle_items });
                 closeModal();
                 loadProducts();
             } catch (err) {
@@ -607,6 +696,86 @@
                 console.error(err);
             }
         };
+
+        // --- Bundle Logic ---
+        let currentAddBundleItems = [];
+        let currentEditBundleItems = [];
+
+        function updateProductDatalist() {
+            const datalist = document.getElementById('allProductsList');
+            datalist.innerHTML = allProducts
+                .filter(p => !p.is_bundle) // Don't allow bundling bundles (for simplicity)
+                .map(p => `<option value="${p.name}">`)
+                .join('');
+        }
+
+        window.toggleBundleSection = (type) => {
+            const checkbox = document.getElementById(`${type}IsBundle`);
+            const section = document.getElementById(`${type}BundleSection`);
+            if (checkbox.checked) {
+                section.classList.remove('hidden-bundle');
+            } else {
+                section.classList.add('hidden-bundle');
+            }
+        };
+
+        window.addToBundleList = (type) => {
+            const searchInput = document.getElementById(`${type}BundleItemSearch`);
+            const qtyInput = document.getElementById(`${type}BundleItemQty`);
+            const name = searchInput.value;
+            const qty = parseInt(qtyInput.value) || 1;
+
+            if (!name) return;
+
+            const product = allProducts.find(p => p.name === name);
+            if (!product) {
+                alert('Product not found. Select from the list.');
+                return;
+            }
+
+            const list = type === 'new' ? currentAddBundleItems : currentEditBundleItems;
+            const existing = list.find(item => item.product_id === product.id);
+
+            if (existing) {
+                existing.quantity += qty;
+            } else {
+                list.push({
+                    product_id: product.id,
+                    product_name: product.name,
+                    quantity: qty
+                });
+            }
+
+            searchInput.value = '';
+            qtyInput.value = '1';
+            renderBundleItems(type);
+        };
+
+        window.removeFromBundle = (type, productId) => {
+            if (type === 'new') {
+                currentAddBundleItems = currentAddBundleItems.filter(item => item.product_id !== productId);
+            } else {
+                currentEditBundleItems = currentEditBundleItems.filter(item => item.product_id !== productId);
+            }
+            renderBundleItems(type);
+        };
+
+        function renderBundleItems(type) {
+            const container = document.getElementById(`${type}BundleItemsPreview`);
+            const list = type === 'new' ? currentAddBundleItems : currentEditBundleItems;
+
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#999; font-size:12px;">No items in bundle</div>';
+                return;
+            }
+
+            container.innerHTML = list.map(item => `
+                <div class="bundle-item">
+                    <span>${item.product_name} x ${item.quantity}</span>
+                    <span class="btn-remove-item" onclick="removeFromBundle('${type}', ${item.product_id})">×</span>
+                </div>
+            `).join('');
+        }
     </script>
 </body>
 

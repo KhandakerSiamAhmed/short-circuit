@@ -753,6 +753,27 @@
             font-size: 48px;
             margin-bottom: 10px;
         }
+
+        .bundle-badge {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid #fca5a5;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .bundle-contents {
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--muted);
+            border-left: 2px solid var(--accent);
+            padding-left: 8px;
+        }
     </style>
 </head>
 
@@ -784,6 +805,15 @@
 
     <!-- PRODUCTS -->
     <div class="products-container">
+        <!-- Bundles Section -->
+        <div id="bundlesSection" class="hidden" style="margin-bottom: 40px;">
+            <h2
+                style="font-size: 20px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                🔥 Featured Bundles
+            </h2>
+            <div class="product-grid" id="bundlesGrid"></div>
+        </div>
+
         <div class="product-count" id="productCount"></div>
         <div class="product-grid" id="productGrid">
             <div class="no-products">
@@ -863,16 +893,43 @@
 
         function renderProducts(products) {
             const grid = document.getElementById('productGrid');
+            const bundlesGrid = document.getElementById('bundlesGrid');
+            const bundlesSection = document.getElementById('bundlesSection');
+
+            const bundles = products.filter(p => p.is_bundle);
+            const regular = products.filter(p => !p.is_bundle);
+
             document.getElementById('productCount').textContent = `${products.length} product${products.length !== 1 ? 's' : ''} found`;
 
-            if (products.length === 0) {
+            // Render Bundles
+            if (bundles.length > 0) {
+                bundlesSection.classList.remove('hidden');
+                bundlesGrid.innerHTML = bundles.map(p => renderProductCard(p)).join('');
+            } else {
+                bundlesSection.classList.add('hidden');
+            }
+
+            // Render Regular
+            if (regular.length === 0) {
                 grid.innerHTML = '<div class="no-products"><div class="icon">🔍</div><p>No products match your search</p></div>';
                 return;
             }
 
-            grid.innerHTML = products.map(p => `
+            grid.innerHTML = regular.map(p => renderProductCard(p)).join('');
+        }
+
+        function renderProductCard(p) {
+            const bundleHtml = p.is_bundle ? `
+                <div class="bundle-badge">Bundle Package</div>
+                <div class="bundle-contents">
+                    ${(p.bundle_items || []).map(bi => `• ${bi.product_name} x${bi.quantity}`).join('<br>')}
+                </div>
+            ` : '';
+
+            return `
                 <div class="product-card" data-id="${p.id}">
                     <div class="product-cat">${p.category || 'General'}</div>
+                    ${bundleHtml}
                     <div class="product-name">${p.name}</div>
                     <div class="product-price">${p.price} <span>Tk</span></div>
                     <div class="product-actions">
@@ -884,7 +941,7 @@
                         <button class="add-cart-btn" id="addBtn-${p.id}" onclick="addToCart(${p.id})">Add to Cart</button>
                     </div>
                 </div>
-            `).join('');
+            `;
         }
 
         function changeQty(id, delta) {
