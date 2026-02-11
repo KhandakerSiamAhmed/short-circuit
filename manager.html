@@ -392,6 +392,22 @@
         .hidden-bundle {
             display: none !important;
         }
+
+        .btn-bundle-add {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-bundle-add:hover {
+            background: #047857;
+        }
     </style>
 </head>
 
@@ -425,12 +441,11 @@
                 <!-- Bundle Item Builder -->
                 <div id="newBundleSection" class="hidden-bundle"
                     style="grid-column: 1/-1; border-top:1px solid #e5e7eb; padding-top:10px;">
-                    <div style="display:flex; gap:10px;">
+                    <div style="display:flex; gap:10px; align-items:center;">
                         <input type="text" id="newBundleItemSearch" placeholder="Search product to add..."
                             list="allProductsList">
                         <input type="number" id="newBundleItemQty" placeholder="Qty" style="width:80px;" value="1">
-                        <button type="button" class="btn-sm btn-nav" style="margin:0;"
-                            onclick="addToBundleList('new')">Add</button>
+                        <button type="button" class="btn-bundle-add" onclick="addToBundleList('new')">+ Add</button>
                     </div>
                     <div id="newBundleItemsPreview" class="bundle-items-list"></div>
                 </div>
@@ -489,12 +504,11 @@
                 <!-- Edit Bundle Items -->
                 <div id="editBundleSection" class="hidden-bundle"
                     style="border-top:1px solid #e5e7eb; padding-top:10px;">
-                    <div style="display:flex; gap:10px;">
+                    <div style="display:flex; gap:10px; align-items:center;">
                         <input type="text" id="editBundleItemSearch" placeholder="Search product..."
                             list="allProductsList">
                         <input type="number" id="editBundleItemQty" placeholder="Qty" style="width:60px;" value="1">
-                        <button type="button" class="btn-sm btn-nav" style="margin:0;"
-                            onclick="addToBundleList('edit')">Add</button>
+                        <button type="button" class="btn-bundle-add" onclick="addToBundleList('edit')">+ Add</button>
                     </div>
                     <div id="editBundleItemsPreview" class="bundle-items-list"></div>
                 </div>
@@ -749,6 +763,7 @@
             searchInput.value = '';
             qtyInput.value = '1';
             renderBundleItems(type);
+            recalcBundlePrices(type);
         };
 
         window.removeFromBundle = (type, productId) => {
@@ -758,6 +773,7 @@
                 currentEditBundleItems = currentEditBundleItems.filter(item => item.product_id !== productId);
             }
             renderBundleItems(type);
+            recalcBundlePrices(type);
         };
 
         function renderBundleItems(type) {
@@ -775,6 +791,26 @@
                     <span class="btn-remove-item" onclick="removeFromBundle('${type}', ${item.product_id})">×</span>
                 </div>
             `).join('');
+        }
+
+        function recalcBundlePrices(type) {
+            const list = type === 'new' ? currentAddBundleItems : currentEditBundleItems;
+            let totalBuying = 0;
+            let totalSelling = 0;
+
+            list.forEach(item => {
+                const product = allProducts.find(p => p.id === item.product_id);
+                if (product) {
+                    totalBuying += (parseFloat(product.buying_price) || 0) * item.quantity;
+                    totalSelling += (parseFloat(product.price) || 0) * item.quantity;
+                }
+            });
+
+            const buyingInput = type === 'new' ? document.getElementById('newBuyingPrice') : document.getElementById('editBuyingPrice');
+            const sellingInput = type === 'new' ? document.getElementById('newPrice') : document.getElementById('editPrice');
+
+            buyingInput.value = totalBuying;
+            sellingInput.value = totalSelling;
         }
     </script>
 </body>
