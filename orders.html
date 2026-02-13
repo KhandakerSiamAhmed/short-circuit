@@ -7,6 +7,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Order Management - Short Circuit</title>
     <link rel="icon" href="Short Circuit .PNG">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -1161,10 +1162,32 @@
             `;
 
             printArea.style.display = 'block';
-            setTimeout(() => {
-                window.print();
+            printArea.style.position = 'absolute';
+            printArea.style.left = '0';
+            printArea.style.top = '0';
+            printArea.style.zIndex = '-1';
+
+            const opt = {
+                margin: 0,
+                filename: `Invoice_${orderNo}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            const btn = document.querySelector(`#order-${orderId} .btn-invoice`);
+            const originalText = btn ? btn.innerHTML : '🖨️ Generate Invoice';
+            if (btn) btn.textContent = 'Generating PDF...';
+
+            html2pdf().set(opt).from(printArea).save().then(() => {
                 printArea.style.display = 'none';
-            }, 300);
+                if (btn) btn.innerHTML = originalText;
+            }).catch(err => {
+                console.error(err);
+                alert('An error occurred while generating PDF');
+                printArea.style.display = 'none';
+                if (btn) btn.innerHTML = originalText;
+            });
         }
 
         async function deleteOrder(orderId, orderNo) {
