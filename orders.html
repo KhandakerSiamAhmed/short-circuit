@@ -1077,7 +1077,7 @@
             }
         }
 
-        function generateInvoice(orderId) {
+        function getInvoiceHTML(orderId) {
             const order = allOrders.find(o => o.id === orderId);
             const items = orderItemsCache[orderId] || [];
             const total = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
@@ -1085,8 +1085,7 @@
             const date = new Date(order.order_date || order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
             const orderNo = order.order_no || 'SC-' + String(order.id).padStart(4, '0');
 
-            const printArea = document.getElementById('printInvoice');
-            printArea.innerHTML = `
+            return `
                 <div class="print-page">
                     <div class="invoice-header">
                         <div class="brand">
@@ -1172,6 +1171,11 @@
                     </div>
                 </div>
             `;
+        }
+
+        function generateInvoice(orderId) {
+            const printArea = document.getElementById('printInvoice');
+            printArea.innerHTML = getInvoiceHTML(orderId);
 
             // Setup printArea for capture
             printArea.style.display = 'block';
@@ -1206,8 +1210,81 @@
             }
         }
 
-        function downloadServerInvoice(orderId) {
-            alert("Server-side PDF generation is not yet implemented for order #" + orderId + ". Please use the native Print Invoice button.");
+        async function downloadServerInvoice(orderId) {
+            const btn = document.querySelector(`#order-${orderId} .btn-download`);
+            const originalText = btn ? btn.innerHTML : '⬇️ Download PDF';
+            if (btn) {
+                btn.textContent = '⏳ Generating...';
+                btn.disabled = true;
+            }
+
+            try {
+                // Get Invoice HTML
+                const invoiceHtml = getInvoiceHTML(orderId);
+
+                // Get styles
+                const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
+
+                // Construct full HTML document
+                const fullHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Invoice</title>
+                        ${styles}
+                        <style>
+                            @page { size: A4; margin: 0; }
+                            body { margin: 0; padding: 0; background: white; }
+                            .print-invoice-page { display: block !important; position: static; }
+                            /* Ensure footer sticks to bottom in PDF */
+                            .print-page { min-height: 297mm; position: relative; }
+                            .invoice-footer { position: absolute; bottom: 0; left: 0; right: 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="print-invoice-page" style="display:block;">
+                            ${invoiceHtml}
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                // Initialize Supabase if not already available globally (db.js does it)
+                // We use the global _supabase or DB object if available, but db.js has 'const _supabase'
+                // which might not be global. 
+                // However, the 'supabase' global object is available from the CDN.
+                const { createClient } = supabase;
+                const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+                const { data, error } = await client.functions.invoke('generate-invoice', {
+                    body: { html: fullHtml }
+                });
+
+                if (error) throw error;
+
+                // Download file
+                const blob = new Blob([data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const order = allOrders.find(o => o.id === orderId);
+                const orderNo = order ? (order.order_no || 'SC-' + String(order.id).padStart(4, '0')) : 'Invoice';
+                a.download = `Invoice_${orderNo}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+            } catch (err) {
+                console.error('PDF Error:', err);
+                alert('Failed to generate PDF: ' + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
         }
     </script>
 </body>
