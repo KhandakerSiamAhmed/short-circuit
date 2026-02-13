@@ -1214,13 +1214,15 @@
             element.style.position = 'absolute';
             element.style.left = '0';
             element.style.top = '0';
-            element.style.zIndex = '-1';
+            element.style.width = '210mm'; // Force width
+            element.style.zIndex = '9999'; // Ensure on top
+            element.style.background = 'white'; // Ensure background
 
             const opt = {
                 margin: 0,
                 filename: `Invoice_${document.getElementById('invId').value}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
