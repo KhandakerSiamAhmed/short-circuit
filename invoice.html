@@ -7,7 +7,6 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Short Circuit - Invoice Generator</title>
     <link rel="icon" href="Short Circuit .PNG">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -1204,41 +1203,11 @@
             generatePrintPages();
 
             const element = document.getElementById('print-area');
-
-            // Show element for capture
             element.style.display = 'block';
-            element.style.position = 'fixed';
-            element.style.left = '0';
-            element.style.top = '0';
-            element.style.width = '210mm';
-            element.style.zIndex = '99999';
-            element.style.backgroundColor = 'white';
 
-            const btn = document.querySelector('.btn-primary');
-            const originalText = btn.textContent;
-            btn.textContent = '⏳ Generating PDF...';
-            btn.disabled = true;
-
-            const opt = {
-                margin: 0,
-                filename: `Invoice_${document.getElementById('invId').value}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: true, windowWidth: 1200 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Delay to ensure browser has rendered the newly visible element
             setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    element.style.display = 'none';
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                }).catch(err => {
-                    console.error('PDF Error:', err);
-                    element.style.display = 'none';
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                });
+                window.print();
+                element.style.display = 'none';
             }, 500);
         }
     </script>
