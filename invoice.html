@@ -1203,19 +1203,16 @@
             saveInvoiceNumber();
             generatePrintPages();
 
-            const originalElement = document.getElementById('print-area');
-            const clone = originalElement.cloneNode(true);
+            const element = document.getElementById('print-area');
 
-            clone.id = 'print-area-clone';
-            clone.style.display = 'block';
-            clone.style.position = 'absolute';
-            clone.style.left = '0px';
-            clone.style.top = '0px';
-            clone.style.width = '210mm';
-            clone.style.zIndex = '9999';
-            clone.style.backgroundColor = 'white';
-
-            document.body.appendChild(clone);
+            // Show element for capture
+            element.style.display = 'block';
+            element.style.position = 'fixed';
+            element.style.left = '0';
+            element.style.top = '0';
+            element.style.width = '210mm';
+            element.style.zIndex = '99999';
+            element.style.backgroundColor = 'white';
 
             const btn = document.querySelector('.btn-primary');
             const originalText = btn.textContent;
@@ -1226,21 +1223,23 @@
                 margin: 0,
                 filename: `Invoice_${document.getElementById('invId').value}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                html2canvas: { scale: 2, useCORS: true, logging: true, windowWidth: 1200 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(clone).save().then(() => {
-                document.body.removeChild(clone);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }).catch(err => {
-                console.error(err);
-                alert('PDF generation failed');
-                if (document.body.contains(clone)) document.body.removeChild(clone);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            });
+            // Delay to ensure browser has rendered the newly visible element
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    element.style.display = 'none';
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error('PDF Error:', err);
+                    element.style.display = 'none';
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                });
+            }, 500);
         }
     </script>
 </body>

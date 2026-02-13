@@ -1161,47 +1161,38 @@
                 </div>
             `;
 
-            // Create a temporary container for the PDF content
-            const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = printArea.innerHTML;
-
-            // Style the temporary container to be visible and properly positioned
-            tempContainer.style.display = 'block';
-            tempContainer.style.position = 'absolute';
-            tempContainer.style.left = '0px';
-            tempContainer.style.top = '0px';
-            tempContainer.style.width = '210mm';
-            tempContainer.style.zIndex = '9999';
-            tempContainer.style.backgroundColor = 'white';
-
-            document.body.appendChild(tempContainer);
-
-            // Hide the original hidden print area just in case
-            printArea.style.display = 'none';
+            // Setup printArea for capture
+            printArea.className = 'print-invoice-page';
+            printArea.style.display = 'block';
+            printArea.style.position = 'fixed';
+            printArea.style.left = '0';
+            printArea.style.top = '0';
+            printArea.style.width = '210mm';
+            printArea.style.zIndex = '99999';
+            printArea.style.backgroundColor = 'white';
 
             const opt = {
                 margin: 0,
                 filename: `Invoice_${orderNo}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                html2canvas: { scale: 2, useCORS: true, logging: true, windowWidth: 1200 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             const btn = document.querySelector(`#order-${orderId} .btn-invoice`);
             const originalText = btn ? btn.innerHTML : '🖨️ Generate Invoice';
-            if (btn) btn.textContent = 'Generating PDF...';
+            if (btn) btn.textContent = 'Generating...';
 
-            html2pdf().set(opt).from(tempContainer).save().then(() => {
-                document.body.removeChild(tempContainer);
-                if (btn) btn.innerHTML = originalText;
-            }).catch(err => {
-                console.error(err);
-                alert('An error occurred while generating PDF');
-                if (document.body.contains(tempContainer)) {
-                    document.body.removeChild(tempContainer);
-                }
-                if (btn) btn.innerHTML = originalText;
-            });
+            setTimeout(() => {
+                html2pdf().set(opt).from(printArea).save().then(() => {
+                    printArea.style.display = 'none';
+                    if (btn) btn.innerHTML = originalText;
+                }).catch(err => {
+                    console.error('PDF Error:', err);
+                    printArea.style.display = 'none';
+                    if (btn) btn.innerHTML = originalText;
+                });
+            }, 500);
         }
 
         async function deleteOrder(orderId, orderNo) {
