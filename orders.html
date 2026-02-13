@@ -1161,13 +1161,23 @@
                 </div>
             `;
 
-            printArea.style.display = 'block';
-            printArea.style.position = 'absolute';
-            printArea.style.left = '0';
-            printArea.style.top = '0';
-            printArea.style.width = '210mm'; // Force width
-            printArea.style.zIndex = '9999'; // Ensure on top
-            printArea.style.background = 'white'; // Ensure background
+            // Create a temporary container for the PDF content
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = printArea.innerHTML;
+
+            // Style the temporary container to be visible and properly positioned
+            tempContainer.style.display = 'block';
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '0px';
+            tempContainer.style.top = '0px';
+            tempContainer.style.width = '210mm';
+            tempContainer.style.zIndex = '9999';
+            tempContainer.style.backgroundColor = 'white';
+
+            document.body.appendChild(tempContainer);
+
+            // Hide the original hidden print area just in case
+            printArea.style.display = 'none';
 
             const opt = {
                 margin: 0,
@@ -1181,13 +1191,15 @@
             const originalText = btn ? btn.innerHTML : '🖨️ Generate Invoice';
             if (btn) btn.textContent = 'Generating PDF...';
 
-            html2pdf().set(opt).from(printArea).save().then(() => {
-                printArea.style.display = 'none';
+            html2pdf().set(opt).from(tempContainer).save().then(() => {
+                document.body.removeChild(tempContainer);
                 if (btn) btn.innerHTML = originalText;
             }).catch(err => {
                 console.error(err);
                 alert('An error occurred while generating PDF');
-                printArea.style.display = 'none';
+                if (document.body.contains(tempContainer)) {
+                    document.body.removeChild(tempContainer);
+                }
                 if (btn) btn.innerHTML = originalText;
             });
         }

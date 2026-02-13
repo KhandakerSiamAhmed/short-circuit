@@ -1203,20 +1203,24 @@
             saveInvoiceNumber();
             generatePrintPages();
 
-            const element = document.getElementById('print-area');
+            const originalElement = document.getElementById('print-area');
+            const clone = originalElement.cloneNode(true);
+
+            clone.id = 'print-area-clone';
+            clone.style.display = 'block';
+            clone.style.position = 'absolute';
+            clone.style.left = '0px';
+            clone.style.top = '0px';
+            clone.style.width = '210mm';
+            clone.style.zIndex = '9999';
+            clone.style.backgroundColor = 'white';
+
+            document.body.appendChild(clone);
+
             const btn = document.querySelector('.btn-primary');
             const originalText = btn.textContent;
             btn.textContent = '⏳ Generating PDF...';
             btn.disabled = true;
-
-            // Make visible for capture
-            element.style.display = 'block';
-            element.style.position = 'absolute';
-            element.style.left = '0';
-            element.style.top = '0';
-            element.style.width = '210mm'; // Force width
-            element.style.zIndex = '9999'; // Ensure on top
-            element.style.background = 'white'; // Ensure background
 
             const opt = {
                 margin: 0,
@@ -1226,14 +1230,14 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none'; // Hide again
+            html2pdf().set(opt).from(clone).save().then(() => {
+                document.body.removeChild(clone);
                 btn.textContent = originalText;
                 btn.disabled = false;
             }).catch(err => {
                 console.error(err);
                 alert('PDF generation failed');
-                element.style.display = 'none';
+                if (document.body.contains(clone)) document.body.removeChild(clone);
                 btn.textContent = originalText;
                 btn.disabled = false;
             });
