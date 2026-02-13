@@ -7,8 +7,6 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Short Circuit - Invoice Generator</title>
     <link rel="icon" href="Short Circuit .PNG">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -774,7 +772,6 @@
         </div>
 
         <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print Invoice</button>
-        <button class="btn btn-secondary" onclick="generateServerPDF()">⬇️ Download PDF (Server)</button>
     </div>
 
     <!-- INVOICE PREVIEW (SCREEN ONLY) -->
@@ -862,8 +859,7 @@
 
 
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
+
     <script src="db.js"></script>
     <script src="auth.js"></script>
     <script>
@@ -1232,83 +1228,7 @@
             }, 500);
         }
 
-        async function generateServerPDF() {
-            const btn = document.querySelector('.btn-secondary');
-            const originalText = btn.textContent;
-            btn.textContent = '⏳ Generating PDF...';
-            btn.disabled = true;
 
-            try {
-                // Initialize Supabase
-                const { createClient } = supabase;
-                const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-                // Ensure print area is populated
-                saveInvoiceNumber();
-                generatePrintPages();
-
-                const element = document.getElementById('print-area');
-
-                // Get styles
-                const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
-
-                // Construct full HTML document
-                const fullHtml = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Invoice</title>
-                        ${styles}
-                        <style>
-                            @page { size: A4; margin: 0; }
-                            body { margin: 0; padding: 0; background: white; }
-                            #print-area { display: block !important; position: static; }
-                            .print-page { page-break-after: always; }
-                            .print-page:last-child { page-break-after: auto; }
-                        </style>
-                    </head>
-                    <body>
-                        ${element.innerHTML}
-                    </body>
-                    </html>
-                `;
-
-                const { data, error } = await _supabase.functions.invoke('generate-invoice', {
-                    body: { html: fullHtml }
-                });
-
-                if (error) throw error;
-
-                // Download file
-                const blob = new Blob([data], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Invoice_${document.getElementById('invId').value || 'New'}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-            } catch (err) {
-                console.error('PDF Error:', err);
-                // Try to extract a meaningful message
-                let msg = err.message || err.toString();
-                if (err.context && err.context.json) {
-                    try {
-                        const body = await err.context.json();
-                        if (body.error) msg = body.error;
-                    } catch (e) { }
-                } else if (typeof err === 'object') {
-                    msg = JSON.stringify(err);
-                }
-                alert('Server Error: ' + msg);
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
     </script>
 </body>
 

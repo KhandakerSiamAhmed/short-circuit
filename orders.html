@@ -944,7 +944,6 @@
 
                 <div class="order-actions">
                     <button class="btn-action btn-invoice" onclick="generateInvoice(${orderId})">🖨️ Print Invoice</button>
-                    <button class="btn-action btn-download" onclick="downloadServerInvoice(${orderId})">⬇️ Download PDF</button>
                     ${!order.completed ? `
                         <button class="btn-action btn-complete" id="completeBtn-${orderId}"
                             ${!(order.ordered_to_wholesaler && order.got_supply && order.delivered) ? 'disabled' : ''}
@@ -1207,92 +1206,6 @@
             } catch (err) {
                 console.error(err);
                 alert('Error deleting order.');
-            }
-        }
-
-        async function downloadServerInvoice(orderId) {
-            const btn = document.querySelector(`#order-${orderId} .btn-download`);
-            const originalText = btn ? btn.innerHTML : '⬇️ Download PDF';
-            if (btn) {
-                btn.textContent = '⏳ Generating...';
-                btn.disabled = true;
-            }
-
-            try {
-                // Get Invoice HTML
-                const invoiceHtml = getInvoiceHTML(orderId);
-
-                // Get styles
-                const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
-
-                // Construct full HTML document
-                const fullHtml = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Invoice</title>
-                        ${styles}
-                        <style>
-                            @page { size: A4; margin: 0; }
-                            body { margin: 0; padding: 0; background: white; }
-                            .print-invoice-page { display: block !important; position: static; }
-                            /* Ensure footer sticks to bottom in PDF */
-                            .print-page { min-height: 297mm; position: relative; }
-                            .invoice-footer { position: absolute; bottom: 0; left: 0; right: 0; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="print-invoice-page" style="display:block;">
-                            ${invoiceHtml}
-                        </div>
-                    </body>
-                    </html>
-                `;
-
-                // Initialize Supabase if not already available globally (db.js does it)
-                // We use the global _supabase or DB object if available, but db.js has 'const _supabase'
-                // which might not be global. 
-                // However, the 'supabase' global object is available from the CDN.
-                const { createClient } = supabase;
-                const client = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-                const { data, error } = await client.functions.invoke('generate-invoice', {
-                    body: { html: fullHtml }
-                });
-
-                if (error) throw error;
-
-                // Download file
-                const blob = new Blob([data], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                const order = allOrders.find(o => o.id === orderId);
-                const orderNo = order ? (order.order_no || 'SC-' + String(order.id).padStart(4, '0')) : 'Invoice';
-                a.download = `Invoice_${orderNo}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-            } catch (err) {
-                console.error('PDF Error:', err);
-                let msg = err.message || err.toString();
-                if (err.context && err.context.json) {
-                    try {
-                        const body = await err.context.json();
-                        if (body.error) msg = body.error;
-                    } catch (e) { }
-                } else if (typeof err === 'object') {
-                    msg = JSON.stringify(err);
-                }
-                alert('Server Error: ' + msg);
-            } finally {
-                if (btn) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
             }
         }
     </script>
