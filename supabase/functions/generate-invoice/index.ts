@@ -1,16 +1,31 @@
 import puppeteer from 'https://deno.land/x/puppeteer@16.2.0/mod.ts'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     const { html } = await req.json()
 
     if (!html) {
-      return new Response('Missing html body', { status: 400 })
+      return new Response('Missing html body', {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
+      })
     }
 
     const browserlessApiKey = Deno.env.get('BROWSERLESS_API_KEY')
     if (!browserlessApiKey) {
-      return new Response('Missing BROWSERLESS_API_KEY environment variable', { status: 500 })
+      return new Response('Missing BROWSERLESS_API_KEY environment variable', {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
+      })
     }
 
     const browser = await puppeteer.connect({
@@ -39,13 +54,14 @@ Deno.serve(async (req) => {
 
     return new Response(pdf, {
       headers: {
+        ...corsHeaders,
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="invoice.pdf"',
       },
     })
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
   }

@@ -1278,7 +1278,16 @@
 
             } catch (err) {
                 console.error('PDF Error:', err);
-                alert('Failed to generate PDF: ' + err.message);
+                let msg = err.message || err.toString();
+                if (err.context && err.context.json) {
+                    try {
+                        const body = await err.context.json();
+                        if (body.error) msg = body.error;
+                    } catch (e) { }
+                } else if (typeof err === 'object') {
+                    msg = JSON.stringify(err);
+                }
+                alert('Server Error: ' + msg);
             } finally {
                 if (btn) {
                     btn.innerHTML = originalText;
