@@ -7,7 +7,7 @@
     <meta name="google-site-verification" content="odywzT_-nc3K25i03qH8gC5aitGtcoNrSnj6KlN3YCc" />
     <title>Short Circuit — Electronics Shop | IUT Components & Parts</title>
     <meta name="description"
-        content="Short Circuit is an electronics shop at IUT offering affordable electronic components, Arduino boards, sensors, resistors, capacitors, and custom bundles. Order online with free delivery inside IUT.">
+        content="Short Circuit is an electronics shop at IUT offering affordable electronic components, Arduino boards, sensors, resistors, capacitors, and custom bundles. Order online with free delivery inside IUT for orders above 1000 TK.">
     <meta name="keywords"
         content="Short Circuit, electronics shop, IUT, electronic components, Arduino, sensors, resistors, capacitors, ESP32, breadboard, LED, Bangladesh, short circuit iut, short circuit electronics">
     <meta name="author" content="Khandaker Siam Ahmed">
@@ -17,7 +17,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="Short Circuit — Electronics Shop at IUT">
     <meta property="og:description"
-        content="Affordable electronic components, Arduino boards, sensors, and custom bundles. Free delivery inside IUT campus.">
+        content="Affordable electronic components, Arduino boards, sensors, and custom bundles. Free delivery inside IUT for orders above 1000 TK.">
     <meta property="og:url" content="https://short-circuit-iut.vercel.app/">
     <meta property="og:site_name" content="Short Circuit">
     <meta property="og:image" content="https://short-circuit-iut.vercel.app/Short Circuit .PNG">
@@ -1158,7 +1158,7 @@
                 <div class="form-group">
                     <label>Delivery Location</label>
                     <div class="radio-group">
-                        <div class="radio-option selected" onclick="selectDelivery(this, 'Inside IUT')">Inside IUT (Free)</div>
+                        <div class="radio-option selected" onclick="selectDelivery(this, 'Inside IUT')">Inside IUT ${total > 1000 ? '(Free)' : '(120 Tk)'}</div>
                         <div class="radio-option" onclick="selectDelivery(this, 'Outside IUT')">Outside IUT (120 Tk)</div>
                     </div>
                     <input type="hidden" id="orderDelivery" value="Inside IUT">

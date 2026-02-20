@@ -764,9 +764,9 @@
             </div>
             <div class="form-group">
                 <label>Delivery Location</label>
-                <select id="delivery">
-                    <option value="0">Inside IUT (Free)</option>
-                    <option value="120">Outside IUT (120 Tk)</option>
+                <select id="delivery" onchange="updatePreview()">
+                    <option value="Inside IUT">Inside IUT (Auto)</option>
+                    <option value="Outside IUT">Outside IUT (120 Tk)</option>
                 </select>
             </div>
         </div>
@@ -1054,7 +1054,8 @@
             });
 
             const discount = parseFloat(document.getElementById('discount').value) || 0;
-            const delivery = parseFloat(document.getElementById('delivery').value) || 0;
+            const deliveryLocation = document.getElementById('delivery').value;
+            const delivery = (deliveryLocation === 'Outside IUT' || (deliveryLocation === 'Inside IUT' && subtotal <= 1000 && subtotal > 0)) ? 120 : 0;
             const grandTotal = subtotal - discount + delivery;
 
             document.getElementById('dispSubtotal').textContent = subtotal.toFixed(2) + ' Tk';
@@ -1067,7 +1068,7 @@
                 discRow.style.display = 'none';
             }
 
-            document.getElementById('dispDelivery').textContent = delivery.toFixed(2) + ' Tk';
+            document.getElementById('dispDelivery').textContent = delivery > 0 ? delivery.toFixed(2) + ' Tk' : 'Free';
             document.getElementById('dispTotal').textContent = grandTotal.toFixed(2) + ' Tk';
 
 

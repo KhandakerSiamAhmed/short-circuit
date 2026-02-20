@@ -843,7 +843,7 @@
             const order = allOrders.find(o => o.id === orderId);
             const items = orderItemsCache[orderId];
             const total = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-            const deliveryCharge = order.delivery_location === 'Outside IUT' ? 120 : 0;
+            const deliveryCharge = (order.delivery_location === 'Outside IUT' || (order.delivery_location === 'Inside IUT' && total <= 1000)) ? 120 : 0;
 
             const details = document.getElementById(`details-${orderId}`);
             details.innerHTML = `
@@ -1080,7 +1080,7 @@
             const order = allOrders.find(o => o.id === orderId);
             const items = orderItemsCache[orderId] || [];
             const total = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-            const deliveryCharge = order.delivery_location === 'Outside IUT' ? 120 : 0;
+            const deliveryCharge = (order.delivery_location === 'Outside IUT' || (order.delivery_location === 'Inside IUT' && total <= 1000)) ? 120 : 0;
             const date = new Date(order.order_date || order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
             const orderNo = order.order_no || 'SC-' + String(order.id).padStart(4, '0');
 
