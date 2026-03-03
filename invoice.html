@@ -441,6 +441,18 @@
 
             .invoice-header {
                 padding: 20px 40px;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                text-align: left !important;
+            }
+
+            .brand {
+                justify-content: flex-start !important;
+            }
+
+            .invoice-title {
+                text-align: right !important;
             }
 
             .meta-section {
@@ -514,7 +526,7 @@
         }
 
         /* mobile */
-        @media (max-width: 768px) {
+        @media screen and (max-width: 768px) {
             body {
                 padding: 10px;
             }

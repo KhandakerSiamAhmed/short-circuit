@@ -33,6 +33,8 @@ Deno.serve(async (req) => {
     })
 
     const page = await browser.newPage()
+    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 1 })
+    await page.emulateMediaType('print')
     await page.setContent(html, { waitUntil: 'networkidle0' })
 
     // Add custom CSS to ensure A4 size and print layout
