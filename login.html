@@ -152,6 +152,24 @@
                 font-size: 16px;
             }
         }
+
+        /* Focus visible */
+        :focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Loading state for login button */
+        button.btn-login:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 

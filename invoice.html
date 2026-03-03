@@ -487,7 +487,6 @@
         }
 
         .suggestion-list {
-            display: none;
             position: absolute;
             top: 100%;
             left: 0;
@@ -500,10 +499,16 @@
             overflow-y: auto;
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-4px);
+            transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
         }
 
         .suggestion-list.active {
-            display: block;
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
 
         .suggestion-item {
@@ -694,6 +699,84 @@
                 font-size: 0.85em;
             }
         }
+
+        /* Nav buttons */
+        #auth-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-nav {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
+            color: white;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn-nav:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-nav-manager { background: #2563eb; }
+        .btn-nav-shop    { background: #4b5563; }
+        .btn-nav-orders  { background: #059669; }
+        .btn-nav-logout  { background: #dc2626; }
+
+        /* Focus visible */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Disabled inputs */
+        input:disabled, select:disabled, textarea:disabled {
+            background: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            pointer-events: all;
+            animation: toast-in 0.25s ease, toast-out 0.25s ease 2.75s forwards;
+            max-width: 320px;
+            line-height: 1.4;
+        }
+        .toast.success { background: #059669; }
+        .toast.error   { background: #dc2626; }
+        .toast.info    { background: #2563eb; }
+        .toast.warning { background: #d97706; }
+        @keyframes toast-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes toast-out { from { opacity:1; } to { opacity:0; } }
     </style>
 </head>
 
@@ -704,18 +787,11 @@
 
     <!-- INPUT FORM -->
     <div class="form-container no-print" style="position: relative;">
-        <div id="auth-controls" style="position: absolute; top: 15px; right: 15px; z-index: 10;">
-            <button onclick="window.location.href='/manager'"
-                style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">Manager
-                Dashboard</button>
-            <button onclick="window.location.href='/'"
-                style="padding: 8px 16px; background: #4b5563; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">Shop
-                Page</button>
-            <button onclick="window.location.href='/orders'"
-                style="padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 13px;">📦
-                Orders</button>
-            <button onclick="Auth.logout()"
-                style="padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Logout</button>
+        <div id="auth-controls">
+            <button onclick="window.location.href='/manager'" class="btn-nav btn-nav-manager">Manager Dashboard</button>
+            <button onclick="window.location.href='/'" class="btn-nav btn-nav-shop">Shop Page</button>
+            <button onclick="window.location.href='/orders'" class="btn-nav btn-nav-orders">📦 Orders</button>
+            <button onclick="Auth.logout()" class="btn-nav btn-nav-logout">Logout</button>
         </div>
         <div class="form-title">
             <h2>📝 Create Invoice</h2>
@@ -763,7 +839,7 @@
                     </div>
                     <input type="number" class="item-qty" placeholder="Qty" value="1" min="1">
                     <input type="number" class="item-price" placeholder="Price" min="0">
-                    <button class="btn btn-remove" onclick="removeItem(this)">×</button>
+                    <button class="btn btn-remove" onclick="removeItem(this)" aria-label="Remove item">×</button>
                 </div>
             </div>
             <button class="btn btn-add" onclick="addItem()">+ Add Item</button>
@@ -783,14 +859,14 @@
             </div>
         </div>
 
-        <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print Invoice</button>
+        <button class="btn btn-primary" onclick="printInvoice()" aria-label="Print invoice">🖨️ Print Invoice</button>
     </div>
 
     <!-- INVOICE PREVIEW (SCREEN ONLY) -->
     <div id="invoice-preview-screen">
         <div class="invoice-header">
             <div class="brand">
-                <img src="Short Circuit .PNG" alt="Logo">
+                <img src="Short Circuit .PNG" alt="Short Circuit Logo" onerror="this.style.display='none'">
                 <div class="brand-info">
                     <h1>SHORT CIRCUIT</h1>
                     <div class="tagline">Electronics Shop</div>
@@ -872,11 +948,23 @@
 
 
 
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="db.js"></script>
     <script src="auth.js"></script>
     <script>
+        function showToast(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
             const savedId = localStorage.getItem('sc_invoice_num') || '1001';
@@ -1133,7 +1221,7 @@
                 const headerHtml = `
                     <div class="invoice-header">
                         <div class="brand">
-                            <img src="Short Circuit .PNG" alt="Logo">
+                            <img src="Short Circuit .PNG" alt="Short Circuit Logo" onerror="this.style.display='none'">
                             <div class="brand-info">
                                 <h1>SHORT CIRCUIT</h1>
                                 <div class="tagline">Electronics Shop</div>
